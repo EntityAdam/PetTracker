@@ -6,5 +6,6 @@ public enum AdopterPersonEventKind
     ReturnedAdoptedPet,
     SponsoredShelter,
     SponsoredPet,
-    AdopterPersonJoin
+    AdopterPersonJoin,
+    OpenToAdopt
 }

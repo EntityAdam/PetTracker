@@ -44,10 +44,10 @@ public class Facade : IDomainFacade
         history.ShelteredPetEventFostered(pet, person, timestamp);
     }
 
-    public void FosterPersonCreate(FosterPerson fosterPerson, DateTimeOffset timestamp)
+    public void PersonOpenToFoster(FosterPerson fosterPerson, DateTimeOffset timestamp)
     {
         data.CreateFosterPerson(fosterPerson);
-        history.NewFosterPersonAddedEvent(fosterPerson.Id, timestamp);
+        history.PersonOpenToFoster(fosterPerson.Id, timestamp);
     }
 
     public void ShelterAddPet(ShelteredPet shelteredPet, DateTimeOffset timestamp)
@@ -62,10 +62,10 @@ public class Facade : IDomainFacade
         history.RemoveFosterHistory(personIdentity);
     }
 
-    public void AdopterPersonCreate(AdopterPerson adopterPerson, DateTimeOffset timestamp)
+    public void PersonOpenToAdoption(AdopterPerson adopterPerson, DateTimeOffset timestamp)
     {
         data.CreateAdopterPerson(adopterPerson);
-        //history.CreateAdopterPerson(fosterPerson)
+        history.PersonOpenToAdoption(adopterPerson.Id);
     }
 
     public void ShelterAssignAdopterPerson(AdopterPetAssignment adopterPetAssignemtn)

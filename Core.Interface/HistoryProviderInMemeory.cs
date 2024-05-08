@@ -73,7 +73,7 @@ public class HistoryProviderInMemeory : IHistoryProvider
         ShelterEvents.Add(new(targetShelter, ShelterEventKind.PetTransferredHere, timeProvider.GetUtcNow()));
     }
 
-    public void NewFosterPersonAddedEvent(PersonIdentity person, DateTimeOffset timestamp)
+    public void PersonOpenToFoster(PersonIdentity person, DateTimeOffset timestamp)
     {
         FosterPersonEvents.Add(new(person, FosterPersonEventKind.FosterPersonJoin, timestamp));
     }
@@ -118,5 +118,10 @@ public class HistoryProviderInMemeory : IHistoryProvider
     public void RemovePetHistory(PetIdentity petIdentity, ShelterIdentity shelterIdentity)
     {
         throw new NotImplementedException();
+    }
+
+    public void PersonOpenToAdoption(PersonIdentity adopterPerson)
+    {
+        AdopterPersonEvents.Add(new(adopterPerson, AdopterPersonEventKind.OpenToAdopt, timeProvider.GetUtcNow()));
     }
 }

@@ -8,5 +8,6 @@ public enum FosterPersonEventKind
     ReturnedFosterPet,
     SponsoredShelter,
     SponsoredPet,
-    FosterPersonJoin
+    FosterPersonJoin,
+    Created
 }

@@ -66,7 +66,7 @@ public class HistoryFixture
 
         Facade.ShelterCreate(shelter1, Date.GetUtcNow());
         Facade.ShelterAddPet(shelteredPet, Date.GetUtcNow());
-        Facade.FosterPersonCreate(fosterPerson, Date.GetUtcNow());
+        Facade.PersonOpenToFoster(fosterPerson, Date.GetUtcNow());
         Facade.ShelterAssignFosterPerson(new(shelteredPet, fosterPerson.Id, Date.GetUtcNow()));
 
         return shelteredPet;
@@ -81,7 +81,7 @@ public class HistoryFixture
 
         Facade.ShelterCreate(shelter1, Date.GetUtcNow());
         Facade.ShelterAddPet(shelteredPet, Date.GetUtcNow());
-        Facade.FosterPersonCreate(fosterPerson, Date.GetUtcNow());
+        Facade.PersonOpenToFoster(fosterPerson, Date.GetUtcNow());
         Facade.ShelterAssignFosterPerson(new(shelteredPet, fosterPerson.Id, Date.GetUtcNow()));
 
         return (shelteredPet, fosterPerson);
@@ -114,7 +114,7 @@ public class HistoryFixture
         Facade.ShelterCreate(originShelter, Date.GetUtcNow());
         Facade.ShelterCreate(targetShelter, Date.GetUtcNow());
         Facade.ShelterAddPet(shelteredPet, Date.GetUtcNow());
-        Facade.FosterPersonCreate(fosterPerson, Date.GetUtcNow());
+        Facade.PersonOpenToFoster(fosterPerson, Date.GetUtcNow());
         Facade.ShelterAssignFosterPerson(new(shelteredPet, fosterPerson.Id, Date.GetUtcNow()));
 
         return (shelteredPet, fosterPerson, targetShelter.Id);
@@ -130,7 +130,7 @@ public class HistoryFixture
 
         Facade.ShelterCreate(shelter1, Date.GetUtcNow());
         Facade.ShelterAddPet(shelteredPet, Date.GetUtcNow());
-        Facade.AdopterPersonCreate(adpopterPerson, Date.GetUtcNow());
+        Facade.PersonOpenToAdoption(adpopterPerson, Date.GetUtcNow());
         Facade.ShelterAssignAdopterPerson(new(shelteredPet, adpopterPerson.Id, Date.GetUtcNow()));
 
         return shelteredPet;
@@ -147,7 +147,7 @@ public class HistoryFixture
         Facade.ShelterCreate(originShelter, Date.GetUtcNow());
         Facade.ShelterCreate(targetShelter, Date.GetUtcNow());
         Facade.ShelterAddPet(shelteredPet, Date.GetUtcNow());
-        Facade.AdopterPersonCreate(adopterPerson, Date.GetUtcNow());
+        Facade.PersonOpenToAdoption(adopterPerson, Date.GetUtcNow());
         Facade.ShelterAssignAdopterPerson(new(shelteredPet, adopterPerson.Id, Date.GetUtcNow()));
 
         return (shelteredPet, adopterPerson, targetShelter.Id);

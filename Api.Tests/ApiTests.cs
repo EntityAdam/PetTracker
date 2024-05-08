@@ -50,15 +50,16 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         shelterCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    //// Shelter create only takes in a name
+    //// A shelter cannot be duplicated using the create API
     //[Fact]
     //public async Task CreateShelter_ShouldThrow_WhenCreatingDuplicaShelter()
     //{
     //    using var scope = webFactory.Services.CreateScope();
+    //    var response1 = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterB"));
+    //    var response2 = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterB"));
 
-    //    var response1 = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterB"));
-    //    var response2 = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterB"));
-
-    //    response1.StatusCode.Should().Be(HttpStatusCode.Created);
+    //    response1.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
     //    response2.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     //}
 
@@ -70,7 +71,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     //    _ = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterC"));
     //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "ShelterC"));
 
-    //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
     //}
 
     //[Fact]
@@ -82,7 +83,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "ShelterD"));
     //    var listPet = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
 
-    //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
     //    listPet.Pet.Name.Name.Should().Be("Sandy");
     //    //listPet.Shelter.Name.Should().Be("ShelterD");
     //}

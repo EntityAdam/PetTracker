@@ -5,10 +5,10 @@ namespace Core.Interface
 {
     public interface IDomainFacade
     {
-        void AdopterPersonCreate(AdopterPerson adopterPerson, DateTimeOffset timestamp);
+        void PersonOpenToAdoption(AdopterPerson adopterPerson, DateTimeOffset timestamp);
         void AdopterPersonRemove(PersonIdentity personIdentity);
         void DeleteShelter(ShelterIdentity id);
-        void FosterPersonCreate(FosterPerson fosterPerson, DateTimeOffset timestamp);
+        void PersonOpenToFoster(FosterPerson fosterPerson, DateTimeOffset timestamp);
         void FosterPersonRemove(PersonIdentity personIdentity);
         IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity personIdentity);
         IEnumerable<ShelteredPetEvent> GetPetHistory(PetIdentity petidentity);

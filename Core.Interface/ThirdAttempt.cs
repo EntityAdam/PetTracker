@@ -152,7 +152,7 @@
 ////    public void ShelterUnlistPet(ShelteredPet pet);
 
 ////    // Adopt
-////    public void CreateAdopterPerson(AdopterPerson person);
+////    public void PersonOpenToAdoption(AdopterPerson person);
 ////    public void AdopterPetAssign(AdopterPetAssignment assignment);
 ////    public void RemoveAdopterPerson(AdopterPerson person);
 
@@ -201,10 +201,10 @@
 //        history.ShelteredPetEventFostered(pet, person, timestamp);
 //    }
 
-//    public void FosterPersonCreate(PersonIdentity person, DateTime timestamp)
+//    public void PersonOpenToFoster(PersonIdentity person, DateTime timestamp)
 //    {
 //        data.CreateFosterPerson(person);
-//        history.NewFosterPersonAddedEvent(person, timestamp);
+//        history.PersonOpenToFoster(person, timestamp);
 //    }
 
 //    public void ShelterAddPet(ShelteredPet pet, DateTime timestamp)
@@ -219,9 +219,9 @@
 //        history.RemoveFosterHistory(person);
 //    }
 
-//    public void AdopterPersonCreate(AdopterPerson person)
+//    public void PersonOpenToAdoption(AdopterPerson person)
 //    {
-//        data.CreateAdopterPerson(person);
+//        data.PersonOpenToAdoption(person);
 //    }
 
 //    public void ShelterAssignAdopterPerson(AdopterPetAssignment assignment)
@@ -287,7 +287,7 @@
 //    void FosterPetAssign(FosterPetAssignment assignment);
 //    void RemoveFosterPerson(PersonIdentity person);
 
-//    void CreateAdopterPerson(AdopterPerson person);
+//    void PersonOpenToAdoption(AdopterPerson person);
 //    void AdopterPetAssign(AdopterPetAssignment assignment);
 //    void RemoveAdopterPerson(AdopterPerson person);
 //}
@@ -312,7 +312,7 @@
 //    public void RemoveShelterHistory(ShelterIdentity shelter);
 //    public void RemoveAdopterHistory(AdopterPerson person);
 //    public void RemoveFosterHistory(PersonIdentity person);
-//    public void NewFosterPersonAddedEvent(PersonIdentity person, DateTime timestamp);
+//    public void PersonOpenToFoster(PersonIdentity person, DateTime timestamp);
 //    IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity person);
 //    IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity person);
 //}
@@ -382,7 +382,7 @@
 //        ShelterEvents.Add(new(shelter, ShelterEventKind.PetTransferredAway, dateTimeProvider.GetCurrentDateTime()));
 //    }
 
-//    public void NewFosterPersonAddedEvent(PersonIdentity person, DateTime timestamp)
+//    public void PersonOpenToFoster(PersonIdentity person, DateTime timestamp)
 //    {
 //        FosterPersonEvents.Add(new(person, FosterPersonEventKind.FosterPersonJoin, timestamp));
 //    }
@@ -487,7 +487,7 @@
 //        ShelteredPets.Add(targetPet);
 //    }
 
-//    public void CreateAdopterPerson(AdopterPerson person)
+//    public void PersonOpenToAdoption(AdopterPerson person)
 //    {
 //        AdopterPeople.Add(person);
 //    }

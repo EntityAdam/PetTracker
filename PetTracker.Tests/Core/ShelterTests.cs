@@ -75,7 +75,7 @@ public class ShelterTests
     //public void CreateFosterPerson_ShouldSucceed()
     //{
     //    var x = historyFixture.GenerateScenario_FosterPet1();
-    //    Action action = () => facade.FosterPersonCreate(historyFixture.F1, timestamp);
+    //    Action action = () => facade.PersonOpenToFoster(historyFixture.F1, timestamp);
     //    action.Should().NotThrow();
     //}
 
@@ -124,7 +124,7 @@ public class ShelterTests
     //    var timestamp = date.Specify(new DateTime(2020, 1, 5));
     //    facade.ShelterCreate(historyFixture.S1, timestamp);
     //    facade.ShelterAddPet(historyFixture.P1, timestamp);
-    //    facade.FosterPersonCreate(historyFixture.F1, timestamp);
+    //    facade.PersonOpenToFoster(historyFixture.F1, timestamp);
     //    Action action = () => facade.ShelterAssignFosterPerson(new(historyFixture.P1, historyFixture.F1, historyFixture.Date.GetCurrentDateTime()));
     //    action.Should().NotThrow();
     //}
@@ -135,7 +135,7 @@ public class ShelterTests
     //    var timestamp = date.Specify(new DateTime(2020, 1, 5));
     //    facade.ShelterCreate(historyFixture.S1, timestamp);
     //    facade.ShelterAddPet(historyFixture.P1, timestamp);
-    //    facade.FosterPersonCreate(historyFixture.F1, timestamp);
+    //    facade.PersonOpenToFoster(historyFixture.F1, timestamp);
     //    facade.ShelterAssignFosterPerson(new(historyFixture.P1, historyFixture.F1, historyFixture.Date.GetCurrentDateTime()));
     //    Action action = () => facade.ShelterAssignFosterPerson(new(historyFixture.P1, historyFixture.F1, historyFixture.Date.GetCurrentDateTime()));
     //    action.Should().Throw<InvalidOperationException>().WithMessage("Pet is already fostered");
@@ -147,7 +147,7 @@ public class ShelterTests
     //    var timestamp = date.Specify(new DateTime(2020, 1, 5));
     //    facade.ShelterCreate(historyFixture.S1, timestamp);
     //    facade.ShelterAddPet(historyFixture.P1, timestamp);
-    //    facade.AdopterPersonCreate(historyFixture.A1);
+    //    facade.PersonOpenToAdoption(historyFixture.A1);
     //    facade.ShelterAssignAdopterPerson(new(historyFixture.P1, historyFixture.A1, historyFixture.Date.GetCurrentDateTime()));
     //    Action action = () => facade.ShelterAssignFosterPerson(new(historyFixture.P1, historyFixture.F1, historyFixture.Date.GetCurrentDateTime()));
     //    action.Should().Throw<InvalidOperationException>().WithMessage("Adopted pets can't be assigned to a foster");
@@ -156,7 +156,7 @@ public class ShelterTests
     //[Fact]
     //public void RemoveAdopterPerson_ShouldSucceed()
     //{
-    //    facade.AdopterPersonCreate(historyFixture.A1);
+    //    facade.PersonOpenToAdoption(historyFixture.A1);
     //    Action action = () => facade.AdopterPersonRemove(historyFixture.A1);
     //    action.Should().NotThrow();
     //}
@@ -166,7 +166,7 @@ public class ShelterTests
     //public void RemoveFosterPerson_ShouldSucceed()
     //{
     //    var timestamp = date.Specify(new DateTime(2020, 1, 5));
-    //    facade.FosterPersonCreate(historyFixture.F1, timestamp);
+    //    facade.PersonOpenToFoster(historyFixture.F1, timestamp);
     //    Action action = () => facade.FosterPersonRemove(historyFixture.F1);
     //    action.Should().NotThrow();
     //}
@@ -177,7 +177,7 @@ public class ShelterTests
     //    var timestamp = date.Specify(new DateTime(2020, 1, 5));
     //    facade.ShelterCreate(historyFixture.S1, timestamp);
     //    facade.ShelterAddPet(historyFixture.P1, timestamp);
-    //    facade.FosterPersonCreate(historyFixture.F1, timestamp);
+    //    facade.PersonOpenToFoster(historyFixture.F1, timestamp);
     //    facade.ShelterAssignFosterPerson(new(historyFixture.P1, historyFixture.F1, historyFixture.Date.GetCurrentDateTime()));
     //    Action action = () => facade.FosterPersonRemove(historyFixture.F1);
     //    action.Should().Throw<InvalidOperationException>().WithMessage("Foster person is in custody of pets that must be returned");

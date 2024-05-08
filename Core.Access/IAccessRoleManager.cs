@@ -33,6 +33,7 @@ public class AccessRoleManager : IAccessRoleManager
         };
         this.store = store;
     }
+
     public void AssignRole(AccessRoleAssignment assignment)
     {
         var (user, role) = assignment;

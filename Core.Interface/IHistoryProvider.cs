@@ -23,7 +23,8 @@ public interface IHistoryProvider
     public void RemoveShelterHistory(ShelterIdentity shelterIdentity);
     public void RemoveAdopterHistory(PersonIdentity personIdentity);
     public void RemoveFosterHistory(PersonIdentity personIdentity);
-    public void NewFosterPersonAddedEvent(PersonIdentity personIdentity, DateTimeOffset timestamp);
+    public void PersonOpenToFoster(PersonIdentity personIdentity, DateTimeOffset timestamp);
     IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity personIdentity);
     IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity personIdentity);
+    public void PersonOpenToAdoption(PersonIdentity adopterPerson);
 }

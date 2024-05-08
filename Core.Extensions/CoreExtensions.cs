@@ -12,7 +12,7 @@ public static class CoreExtensions
         services.AddSingleton<IHistoryProvider, HistoryProviderInMemeory>();
         services.AddSingleton<IDataFacade, DataFacadeInMemory>();
         services.AddSingleton<IUserRolesStore, UserRoleStoreInMemory>();
-        services.AddSingleton<TimeProvider>(TimeProvider.System);
+        services.AddSingleton(TimeProvider.System);
         services.AddTransient<IAccessRoleManager, AccessRoleManager>();
         return services;
     }
