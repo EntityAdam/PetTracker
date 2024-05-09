@@ -253,7 +253,7 @@
 //        return history.GetShelterDateListedByShelter(shelter);
 //    }
 
-//    public int GetPetsFosteredCount(ShelterIdentity shelter)
+//    public int GetPetsFosteredCountByShelter(ShelterIdentity shelter)
 //    {
 //        return history.GetPetsFosteredCountByShelter(shelter);
 //    }

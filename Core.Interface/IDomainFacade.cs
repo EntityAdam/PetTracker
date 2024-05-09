@@ -13,7 +13,7 @@ namespace Core.Interface
         IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity personIdentity);
         IEnumerable<ShelteredPetEvent> GetPetHistory(PetIdentity petidentity);
         int GetPetsAdoptedCountByShelter(ShelterIdentity shelterIdentity);
-        int GetPetsFosteredCount(ShelterIdentity shelterIdentity);
+        int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity);
         int GetPetsListedCountByShelter(ShelterIdentity shelterIdentity);
         IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity shelterIdentity);
         IEnumerable<Shelter> ListShelters();

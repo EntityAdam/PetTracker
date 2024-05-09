@@ -84,7 +84,7 @@ public class HistoryProviderInMemeory : IHistoryProvider
         PetEvents.RemoveAll(p => p.PetIdentity == pet.Id);
     }
 
-    public int GetPetsFosteredCountByShelter(ShelterIdentity s1)
+    public int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity)
     {
         return ShelterEvents.Count(e => e.ShelterEventKind == ShelterEventKind.PetFostered);
     }

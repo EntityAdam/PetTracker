@@ -37,8 +37,10 @@ public class HistoryTests
         petFosteredEvent.PetIdentity.Should().Be(shelteredPet.Pet.Id);
         petFosteredEvent.Timestamp.Should().Be(new DateTime(2020, 1, 5));
 
-        //var shelterEvents = facade.GetShelterHistory();
-        //var personEvents = facade.GetAdopterPersonHistory();
+        var petsListedCount = facade.GetPetsListedCountByShelter(shelteredPet.ShelterIdentity);
+        petsListedCount.Should().Be(1);
+        var petsFosteredCount = facade.GetPetsFosteredCountByShelter(shelteredPet.ShelterIdentity);
+        petsFosteredCount.Should().Be(1);
     }
 
     [Fact]
@@ -46,7 +48,7 @@ public class HistoryTests
     {
         var pet = historyFixture.GenerateScenario_FosterPet1();
 
-        var fosteredCount = facade.GetPetsFosteredCount(pet.ShelterIdentity);
+        var fosteredCount = facade.GetPetsFosteredCountByShelter(pet.ShelterIdentity);
         
         fosteredCount.Should().Be(1);
     }

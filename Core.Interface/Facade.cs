@@ -98,7 +98,7 @@ public class Facade : IDomainFacade
         return history.GetShelterDateListedByShelter(shelterIdentity);
     }
 
-    public int GetPetsFosteredCount(ShelterIdentity shelterIdentity)
+    public int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity)
     {
         return history.GetPetsFosteredCountByShelter(shelterIdentity);
     }
