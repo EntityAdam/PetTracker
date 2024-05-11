@@ -63,9 +63,26 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
         var petId = petResponseContent?.Pet.Id.Id;
 
-        ShelteredPet sut = await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
+        ShelteredPet? sut = await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
         //sut.ShelterIdentity.Should().Be(shelterId);
         sut.Pet.PetDetails.Name.Should().Be("Sandy");
+    }
+
+    [Fact]
+    public async Task GetShelterdPets2_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+        await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Molly"));
+
+        IEnumerable<ShelteredPet> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPet>>($"/shelters/{shelterId}/pets");
+        //sut.ShelterIdentity.Should().Be(shelterId);
+        sut.Count().Should().Be(2);
     }
 
     //// Shelter create only takes in a name
