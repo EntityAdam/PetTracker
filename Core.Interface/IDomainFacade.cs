@@ -24,5 +24,7 @@ namespace Core.Interface
         void ShelterRemoveAndObfuscateData(ShelterIdentity shelterIdentity);
         void ShelterTransferPet(ShelteredPet shelteredPet, ShelterIdentity shelterIdentity);
         void ShelterUnlistPet(ShelteredPet shelteredPet);
+        ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity);
+        IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity);
     }
 }

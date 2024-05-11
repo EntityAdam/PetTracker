@@ -123,4 +123,14 @@ public class Facade : IDomainFacade
         data.RemoveShelter(id);
         history.RemoveShelterHistory(id);
     }
+
+    public ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity)
+    {
+        return data.GetShelteredPetDetails(shelterIdentity, petIdentity);
+    }
+
+    public IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity)
+    {
+        return data.GetShelteredPets(shelterIdentity);
+    }
 }

@@ -50,6 +50,24 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         shelterCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    [Fact]
+    public async Task GetShelterdPets_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+        var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+        var petId = petResponseContent?.Pet.Id.Id;
+
+        ShelteredPet sut = await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
+        //sut.ShelterIdentity.Should().Be(shelterId);
+        sut.Pet.PetDetails.Name.Should().Be("Sandy");
+    }
+
     //// Shelter create only takes in a name
     //// A shelter cannot be duplicated using the create API
     //[Fact]

@@ -1,6 +1,7 @@
 using Core.Extensions;
 using Core.Interface;
 using Core.Interface.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -70,6 +71,15 @@ app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (stri
       is Shelter shelter
         ? TypedResults.NoContent()
         : TypedResults.BadRequest());
+
+app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, IShelterApiHandler viewModel) => 
+    TypedResults.Ok(await viewModel.GetShelteredPets(shelterId)));
+
+app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, IShelterApiHandler viewModel) => 
+    await viewModel.GetShelteredPet(shelterId, petId)
+        is ShelteredPet shelteredPet
+        ? TypedResults.Ok(shelteredPet)
+        : TypedResults.NotFound());
 
 app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, IShelterApiHandler viewModel, [FromBody] ListPetModel listPetModel) => 
     await viewModel.ListPet(shelterId, listPetModel)

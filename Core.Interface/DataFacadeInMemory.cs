@@ -103,4 +103,14 @@ public class DataFacadeInMemory : IDataFacade
         FosterPeople.RemoveAll(p=>p.Id == person);
         
     }
+
+    public ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity)
+    {
+        return ShelteredPets.FirstOrDefault(p => p.ShelterIdentity == shelterIdentity && p.Pet.Id == petIdentity);
+    }
+
+    public IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity)
+    {
+        return ShelteredPets.Where(p=>p.ShelterIdentity == shelterIdentity);
+    }
 }

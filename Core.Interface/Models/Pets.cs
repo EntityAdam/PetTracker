@@ -20,7 +20,7 @@ public enum MicrochipFrequencyKind
 }
 
 // domain objects
-public record Pet(PetIdentity Id, PetDetails Name)
+public record Pet(PetIdentity Id, PetDetails PetDetails)
 {
     public static Pet CreateNewWithName(string petName)
     {

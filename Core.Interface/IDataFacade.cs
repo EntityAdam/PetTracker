@@ -21,4 +21,6 @@ public interface IDataFacade
     void CreateAdopterPerson(AdopterPerson adopterPerson);
     void AdopterPetAssign(AdopterPetAssignment adopterPetAssignment);
     void RemoveAdopterPerson(PersonIdentity personIdentity);
+    ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity);
+    IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity);
 }
