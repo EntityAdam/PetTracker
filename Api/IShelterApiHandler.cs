@@ -15,6 +15,7 @@ public interface IShelterApiHandler
     Task<ShelteredPet> ListPet(string shelterId, ListPetModel listPetModel);
     Task<Shelter> ShelterCreate(ShelterModel shelter);
     Task<IEnumerable<Shelter>> ShelterList();
+    Task<ShelteredPetEvent> TransferPet(string shelterId, string petId, string shelterIdTarget);
 }
 
 public class ShelterApiHandler(IDomainFacade facade, TimeProvider timeProvider) : IShelterApiHandler
@@ -136,13 +137,35 @@ public class ShelterApiHandler(IDomainFacade facade, TimeProvider timeProvider) 
         return await Task.FromResult(facade.ListShelters());
     }
 
+    public async Task<ShelteredPetEvent> TransferPet(string shelterId, string petId, string shelterIdTarget)
+    {
+        if (!Ulid.TryParse(shelterId, out var shelterUlid))
+        {
+            return null!;
+        }
+        if (!Ulid.TryParse(petId, out var petUlid))
+        {
+            return null!;
+        }
+        if (!Ulid.TryParse(petId, out var shelterUlidTarget))
+        {
+            return null!;
+        }
+        var petIdentity = new PetIdentity(petUlid, null);
+        var shelterIdentity = new ShelterIdentity(shelterUlid);
+        var shelteredPet = facade.GetShelteredPetDetails(shelterIdentity, petIdentity);
+        var shelterIdentityTarget = new ShelterIdentity(shelterUlidTarget);
+        facade.ShelterTransferPet(shelteredPet, shelterIdentityTarget);
+        var result = facade.GetPetHistory(petIdentity).Last();
+        return await Task.FromResult(result);
+    }
+
     async Task<ShelteredPet> IShelterApiHandler.ListPet(string shelterId, ListPetModel listPetModel)
     {
         if (!Ulid.TryParse(shelterId, out var ulid))
         {
             return null!;
         }
-
         var shelterUlid = ulid;
         var petDetails = new PetDetails(listPetModel.Name);
         var petIdentity = new PetIdentity(Ulid.NewUlid(), null);

@@ -147,6 +147,31 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task PetTransfer_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse1 = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var shelterCreateResponse2 = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterB"));
+        
+        var content1 = await shelterCreateResponse1.Content.ReadFromJsonAsync<Shelter>();
+        var content2 = await shelterCreateResponse2.Content.ReadFromJsonAsync<Shelter>();
+
+        var shelterIdOrigin = content1?.Id.Id;
+        var shelterIdTarget = content2?.Id.Id;
+
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterIdOrigin}/pets", new ListPetModel("Sandy"));
+        var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+        Ulid petId = petResponseContent.Pet.Id.Id;
+
+        var sut = await httpClient.PutAsJsonAsync<string>($"/shelters/{shelterIdOrigin}/pets/{petId}/transfer", shelterIdTarget.ToString());
+        sut.StatusCode.Should().Be(HttpStatusCode.OK);
+        var sutContent = await sut.Content.ReadFromJsonAsync<ShelteredPetEvent>();
+        sutContent.PetIdentity.Id.Should().Be(petId);
+        sutContent.PetEventKind.Should().Be(PetEventKind.TransferredToAnotherShelter);
+    }
+
     //// Shelter create only takes in a name
     //// A shelter cannot be duplicated using the create API
     //[Fact]

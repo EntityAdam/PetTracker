@@ -95,6 +95,11 @@ app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<I
         ? TypedResults.Ok(shelteredPetEvents)
         : TypedResults.NotFound());
 
+app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, IShelterApiHandler viewModel, [FromBody] string shelterIdTarget) => 
+    await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
+        is ShelteredPetEvent transferEvent
+        ? TypedResults.Ok(transferEvent)
+        : TypedResults.BadRequest());
 
 //app.MapGet("/shelters/{shelterId}/history", async (string shelterId, IShelterApiHandler viewModel) =>
 //    TypedResults.Ok(await viewModel.GetHistoryById(shelterId))).WithName("GetShelterHistoryById");
@@ -212,3 +217,4 @@ public partial class Program { }
 
 
 public record ListPetModel(string Name);
+public record TransferPetModel();
