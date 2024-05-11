@@ -61,18 +61,20 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
     //    response1.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
     //    response2.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    //}
+    //}b6rt 'l
 
-    //[Fact]
-    //public async Task ShelterListPet_ShouldSucceed()
-    //{
-    //    using var scope = webFactory.Services.CreateScope();
+    [Fact]
+    public async Task ShelterListPet_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
 
-    //    _ = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterC"));
-    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "ShelterC"));
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
 
-    //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
-    //}
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+        listPetResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 
     //[Fact]
     //public async Task ShelterListPet_ShouldReturnPetObject()

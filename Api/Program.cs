@@ -50,26 +50,34 @@ app.MapGet("/claims", (ClaimsPrincipal user) =>
     return sb.ToString();
 }).RequireAuthorization();
 
+app.MapGet("/shelters", async (IShelterApiHandler viewModel) =>
+    TypedResults.Ok(await viewModel.ShelterList()));
+
+app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> (IShelterApiHandler viewModel, [FromBody] ShelterModel shelter) =>
+    await viewModel.ShelterCreate(shelter)
+      is Shelter createdShelter
+        ? TypedResults.Created($"/shelters/{createdShelter.Id.Id}", createdShelter)
+        : TypedResults.BadRequest());
+
 app.MapGet("/shelters/{id}", async Task<Results<Ok<Shelter>, NotFound>> (string id, IShelterApiHandler viewModel) =>
     await viewModel.GetById(id) 
       is Shelter shelter
         ? TypedResults.Ok(shelter)
         : TypedResults.NotFound()).WithName("GetShelterById");
 
-app.MapGet("/shelters", async (IShelterApiHandler viewModel) => 
-    TypedResults.Ok(await viewModel.ShelterList()));
-
-app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> (IShelterApiHandler viewModel, [FromBody] ShelterModel shelter) =>
-    await viewModel.ShelterCreate(shelter) 
-      is Shelter createdShelter
-        ? TypedResults.Created($"/shelters/{createdShelter.Id.Id}", createdShelter)
-        : TypedResults.BadRequest());
-
 app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (string id, IShelterApiHandler viewModel) =>
     await viewModel.Delete(id)
       is Shelter shelter
         ? TypedResults.NoContent()
         : TypedResults.BadRequest());
+
+app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, IShelterApiHandler viewModel, [FromBody] ListPetModel listPetModel) => 
+    await viewModel.ListPet(shelterId, listPetModel)
+       is ShelteredPet petModel
+         ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
+         : TypedResults.BadRequest());;
+
+
 
 //app.MapGet("/shelters/{shelterId}/history", async (string shelterId, IShelterApiHandler viewModel) =>
 //    TypedResults.Ok(await viewModel.GetHistoryById(shelterId))).WithName("GetShelterHistoryById");
@@ -183,3 +191,7 @@ public partial class Program { }
 
 //builder.Services.AddAuthorizationBuilder()
 //    .AddPolicy("shelter-policy", policy => policy.RequireRole("shelter")); //dotnet user-jwts create --role "shelter"
+
+
+
+public record ListPetModel(string Name);
