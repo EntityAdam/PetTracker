@@ -91,6 +91,7 @@ app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPe
 app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, IShelterApiHandler viewModel) =>
     await viewModel.GetShelteredPetHistory(shelterId, petId)
         is IEnumerable<ShelteredPetEvent> shelteredPetEvents
+        && shelteredPetEvents.Count() > 0
         ? TypedResults.Ok(shelteredPetEvents)
         : TypedResults.NotFound());
 

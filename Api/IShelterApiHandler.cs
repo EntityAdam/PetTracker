@@ -26,7 +26,6 @@ public class ShelterApiHandler(IDomainFacade facade, TimeProvider timeProvider) 
             return null!;
         }
 
-
         var result = await GetById(id);
         facade.DeleteShelter(result.Id);
         return result;

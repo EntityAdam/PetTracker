@@ -56,7 +56,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     public async Task GetShelterdPets_ShouldSucceed()
     {
         using var scope = webFactory.Services.CreateScope();
-        
+
         var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
         var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
         var shelterId = content?.Id.Id;
@@ -68,6 +68,32 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         ShelteredPet? sut = await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
         //sut.ShelterIdentity.Should().Be(shelterId);
         sut.Pet.PetDetails.Name.Should().Be("Sandy");
+    }
+
+    [Fact]
+    public async Task GetShelter_ShouldReturn404()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        var shelterId = Ulid.Empty.ToString();
+
+        var sut = async () => await httpClient.GetFromJsonAsync<Shelter>($"/shelters/{shelterId}");
+
+        await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetShelterdPets_ShouldReturn404()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var petId = Ulid.Empty.ToString();
+
+        var sut = async () => await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
+        await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -103,6 +129,22 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         IEnumerable<ShelteredPetEvent> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPetEvent>>($"/shelters/{shelterId}/pets/{petId}/history");
         sut.Count().Should().Be(1);
         sut.First().PetEventKind.Should().Be(PetEventKind.ListedAtShelter);
+    }
+
+
+    [Fact]
+    public async Task GetShelterdPetHistory_ShouldReturn404()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var petId = Ulid.Empty.ToString();
+
+        var sut = async () => await httpClient.GetFromJsonAsync<ShelteredPetEvent>($"/shelters/{shelterId}/pets/{petId}/history");
+        await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
     }
 
     //// Shelter create only takes in a name
