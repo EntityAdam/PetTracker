@@ -133,4 +133,11 @@ public class Facade : IDomainFacade
     {
         return data.GetShelteredPets(shelterIdentity);
     }
+
+    public IEnumerable<ShelteredPetEvent> GetShelteredPetHistory(ShelterIdentity shelterIdentity, PetIdentity petIdentity)
+    {
+        // wut about shelter? do I even need to specify it? 
+        // if I return all of the pet history, it includes if it has been adopted, fostered or sheltered elsewhere.. do I want to make that info available?
+        return history.GetPetHistory(petIdentity);
+    }
 }

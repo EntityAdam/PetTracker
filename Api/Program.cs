@@ -1,5 +1,6 @@
 using Core.Extensions;
 using Core.Interface;
+using Core.Interface.Events;
 using Core.Interface.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -87,6 +88,11 @@ app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPe
          ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
          : TypedResults.BadRequest());
 
+app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, IShelterApiHandler viewModel) =>
+    await viewModel.GetShelteredPetHistory(shelterId, petId)
+        is IEnumerable<ShelteredPetEvent> shelteredPetEvents
+        ? TypedResults.Ok(shelteredPetEvents)
+        : TypedResults.NotFound());
 
 
 //app.MapGet("/shelters/{shelterId}/history", async (string shelterId, IShelterApiHandler viewModel) =>

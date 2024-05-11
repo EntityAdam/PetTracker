@@ -26,5 +26,6 @@ namespace Core.Interface
         void ShelterUnlistPet(ShelteredPet shelteredPet);
         ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity);
         IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity);
+        IEnumerable<ShelteredPetEvent> GetShelteredPetHistory(ShelterIdentity shelterIdentity, PetIdentity petIdentity);
     }
 }

@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Net;
 using Core.Interface.Models;
+using Core.Interface.Events;
+using Core.Interface;
 
 namespace Api.Tests;
 
@@ -83,6 +85,24 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         IEnumerable<ShelteredPet> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPet>>($"/shelters/{shelterId}/pets");
         //sut.ShelterIdentity.Should().Be(shelterId);
         sut.Count().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetShelterdPetHistory_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+        var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+        var petId = petResponseContent?.Pet.Id.Id;
+
+        IEnumerable<ShelteredPetEvent> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPetEvent>>($"/shelters/{shelterId}/pets/{petId}/history");
+        sut.Count().Should().Be(1);
+        sut.First().PetEventKind.Should().Be(PetEventKind.ListedAtShelter);
     }
 
     //// Shelter create only takes in a name

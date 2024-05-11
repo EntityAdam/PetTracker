@@ -10,6 +10,7 @@ public interface IShelterApiHandler
     Task<IEnumerable<ShelterEvent>> GetHistoryEventTypeById(string shelterId, int eventKind);
     Task<IEnumerable<ShelterEvent>> GetListedDate(string shelterId);
     Task<ShelteredPet?> GetShelteredPet(string shelterId, string petId);
+    Task<IEnumerable<ShelteredPetEvent>> GetShelteredPetHistory(string shelterId, string petId);
     Task<IEnumerable<ShelteredPet>> GetShelteredPets(string shelterId);
     Task<ShelteredPet> ListPet(string shelterId, ListPetModel listPetModel);
     Task<Shelter> ShelterCreate(ShelterModel shelter);
@@ -73,6 +74,23 @@ public class ShelterApiHandler(IDomainFacade facade, TimeProvider timeProvider) 
         var petIdentity = new PetIdentity(petUlid, null);
 
         ShelteredPet? result = facade.GetShelteredPetDetails(shelterIdentity, petIdentity);
+        return await Task.FromResult(result);
+    }
+
+    public async Task<IEnumerable<ShelteredPetEvent>> GetShelteredPetHistory(string shelterId, string petId)
+    {
+        if (!Ulid.TryParse(shelterId, out var shelterUlid))
+        {
+            return null!;
+        }
+        if (!Ulid.TryParse(petId, out var petUlid))
+        {
+            return null!;
+        }
+        var shelterIdentity = new ShelterIdentity(shelterUlid);
+        var petIdentity = new PetIdentity(petUlid, null);
+
+        IEnumerable<ShelteredPetEvent> result = facade.GetShelteredPetHistory(new(shelterUlid), new(petUlid, null));
         return await Task.FromResult(result);
     }
 
