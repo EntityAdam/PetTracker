@@ -75,7 +75,7 @@ app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPe
     await viewModel.ListPet(shelterId, listPetModel)
        is ShelteredPet petModel
          ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
-         : TypedResults.BadRequest());;
+         : TypedResults.BadRequest());
 
 
 
