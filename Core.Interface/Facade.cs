@@ -93,7 +93,7 @@ public class Facade : IDomainFacade
         return history.GetPetHistory(petIdentity);
     }
 
-    public IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity shelterIdentity)
+    public ShelterEvent GetShelterDateListedByShelter(ShelterIdentity shelterIdentity)
     {
         return history.GetShelterDateListedByShelter(shelterIdentity);
     }

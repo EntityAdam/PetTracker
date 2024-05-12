@@ -12,6 +12,12 @@ public class ShelterApiViewModel(IDomainFacade facade, TimeProvider timeProvider
 
     public async Task<IEnumerable<Shelter>> ListAll() => await Task.FromResult(facade.ListShelters());
 
+    public async Task<Shelter> GetById(string id)
+    {
+        var result = facade.ListShelters().FirstOrDefault(x => x.Id.Id.ToString() == id);
+        return await Task.FromResult(result!);
+    }
+
     public async Task<bool> Delete(string shelterId)
     {
         if (!Ulid.TryParse(shelterId, out var shelterUlid))
@@ -28,12 +34,6 @@ public class ShelterApiViewModel(IDomainFacade facade, TimeProvider timeProvider
         {
             return await Task.FromResult(false);
         }
-    }
-
-    public async Task<Shelter> GetById(string id)
-    {
-        var result = facade.ListShelters().FirstOrDefault(x => x.Id.Id.ToString() == id);
-        return await Task.FromResult(result!);
     }
 
     private Shelter NewEmptyShelter(string name)

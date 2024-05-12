@@ -13,7 +13,7 @@ public class ShelterHistoryApiViewModel(IDomainFacade facade, TimeProvider timeP
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<ShelterEvent>> GetListedDate(string shelterId)
+    public async Task<ShelterEvent> GetListedDate(string shelterId)
     {
         if (!Ulid.TryParse(shelterId, out var ulid))
         {

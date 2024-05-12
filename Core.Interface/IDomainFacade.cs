@@ -15,7 +15,7 @@ namespace Core.Interface
         int GetPetsAdoptedCountByShelter(ShelterIdentity shelterIdentity);
         int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity);
         int GetPetsListedCountByShelter(ShelterIdentity shelterIdentity);
-        IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity shelterIdentity);
+        ShelterEvent GetShelterDateListedByShelter(ShelterIdentity shelterIdentity);
         IEnumerable<Shelter> ListShelters();
         void ShelterAddPet(ShelteredPet shelteredPet, DateTimeOffset timestamp);
         void ShelterAssignAdopterPerson(AdopterPetAssignment adopterPetAssignement);

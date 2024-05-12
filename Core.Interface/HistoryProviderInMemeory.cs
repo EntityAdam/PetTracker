@@ -89,9 +89,9 @@ public class HistoryProviderInMemeory : IHistoryProvider
         return ShelterEvents.Count(e => e.ShelterEventKind == ShelterEventKind.PetFostered);
     }
 
-    public IEnumerable<ShelterEvent> GetShelterDateListedByShelter(ShelterIdentity person)
+    public ShelterEvent GetShelterDateListedByShelter(ShelterIdentity person)
     {
-        return ShelterEvents.Where(e => e.ShelterEventKind == ShelterEventKind.ShelterListed);
+        return ShelterEvents.First(e => e.ShelterEventKind == ShelterEventKind.ShelterListed);
     }
 
     public IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity person)

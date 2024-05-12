@@ -89,6 +89,18 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task ShelterHistoryDateListed_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var shelterDateListedResponse = await httpClient.GetFromJsonAsync<ShelterEvent>($"/shelters/{shelterId}/history/date-listed");
+        shelterDateListedResponse.ShelterEventKind.Should().Be(ShelterEventKind.ShelterListed);
+    }
+
+    [Fact]
     public async Task DeleteNotEmptyShelter_ShouldFail()
     {
         using var scope = webFactory.Services.CreateScope();

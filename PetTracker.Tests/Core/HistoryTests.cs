@@ -58,11 +58,9 @@ public class HistoryTests
     {
         var pet = historyFixture.GenerateScenario_FosterPet1();
 
-        var shelterEvents = facade.GetShelterDateListedByShelter(pet.ShelterIdentity);
-        var shelterListedEvent = shelterEvents.First(e => e.ShelterEventKind == ShelterEventKind.ShelterListed);
+        var shelterEvent = facade.GetShelterDateListedByShelter(pet.ShelterIdentity);
 
-        shelterEvents.Should().HaveCount(1);
-        shelterListedEvent.Timestamp.Should().Be(new DateTime(2020, 1, 5));
+        shelterEvent.Timestamp.Should().Be(new DateTime(2020, 1, 5));
     }
 
     [Fact]
