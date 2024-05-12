@@ -1,7 +1,7 @@
 ﻿using Core.Interface;
 using Core.Interface.Models;
 
-public class ShelterApiViewModel(IDomainFacade facade, TimeProvider timeProvider)
+public class ShelterApiViewModel(IShelterFacade facade, TimeProvider timeProvider)
 {
     public async Task<Shelter> Create(ShelterModel shelter)
     {

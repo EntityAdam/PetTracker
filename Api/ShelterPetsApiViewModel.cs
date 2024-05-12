@@ -2,7 +2,7 @@
 using Core.Interface.Events;
 using Core.Interface.Models;
 
-public class ShelterPetsApiViewModel(IDomainFacade facade, TimeProvider timeProvider)
+public class ShelterPetsApiViewModel(IShelterPetsFacade facade, TimeProvider timeProvider)
 {
     public async Task<ShelteredPet> AddPet(string shelterId, ListPetModel listPetModel)
     {
@@ -66,7 +66,11 @@ public class ShelterPetsApiViewModel(IDomainFacade facade, TimeProvider timeProv
         var shelteredPet = facade.GetShelteredPetDetails(shelterIdentity, petIdentity);
         var shelterIdentityTarget = new ShelterIdentity(shelterUlidTarget);
         facade.ShelterTransferPet(shelteredPet, shelterIdentityTarget);
-        var result = facade.GetPetHistory(petIdentity).Last();
+        
+        //TODO FIX
+        //var result = facade.GetPetHistory(petIdentity).Last();
+        var result = new ShelteredPetEvent(petIdentity, PetEventKind.TransferredToAnotherShelter, timeProvider.GetUtcNow());
+        
         return await Task.FromResult(result);
     }
 }

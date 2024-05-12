@@ -1,7 +1,7 @@
 ﻿using Core.Interface;
 using Core.Interface.Events;
 
-public class ShelterHistoryApiViewModel(IDomainFacade facade, TimeProvider timeProvider)
+public class ShelterHistoryApiViewModel(IShelterHistoryFacade facade, TimeProvider timeProvider)
 {
     public Task<IEnumerable<ShelterEvent>> GetHistoryById(string shelterId)
     {

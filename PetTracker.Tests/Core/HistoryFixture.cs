@@ -9,7 +9,10 @@ public class HistoryFixture
 {
     public FakeTimeProvider Date { get; }
     public Facade Facade { get; }
-    
+    public IShelterFacade ShelterFacade { get => Facade; }
+    public IShelterHistoryFacade ShelterHistoryFacade { get => Facade; }
+    public IShelterPetsFacade ShelterPetsFacade { get => Facade; }
+
     public HistoryFixture()
     {
         this.Date = new FakeTimeProvider();

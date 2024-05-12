@@ -3,7 +3,7 @@ using Core.Interface.Models;
 
 namespace Core.Interface;
 
-public class Facade : IDomainFacade
+public class Facade : IDomainFacade, IShelterFacade, IShelterHistoryFacade, IShelterPetsFacade
 {
     private readonly IDataFacade data;
     private readonly IHistoryProvider history;

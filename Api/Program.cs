@@ -1,7 +1,6 @@
 using Core.Extensions;
 using Core.Interface.Events;
 using Core.Interface.Models;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
