@@ -79,8 +79,11 @@ app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (stri
 
 // --------------------------------------------------  Shelters History -------------------------------------------------- //
 
-app.MapGet("/shelters/{shelterId}/history/date-listed", async (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
-    TypedResults.Ok(await viewModel.GetListedDate(shelterId)));
+app.MapGet("/shelters/{shelterId}/history/date-listed", async Task<Results<Ok<ShelterEvent>, NotFound>> (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
+    await viewModel.GetListedDate(shelterId)
+        is ShelterEvent shelterEvent
+            ? TypedResults.Ok(shelterEvent)
+            : TypedResults.NotFound());
 
 // --------------------------------------------------  Shelter Pets -------------------------------------------------- //
 
@@ -90,8 +93,8 @@ app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, [FromServices]
 app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel) => 
     await viewModel.GetPetById(shelterId, petId)
         is ShelteredPet shelteredPet
-        ? TypedResults.Ok(shelteredPet)
-        : TypedResults.NotFound());
+            ? TypedResults.Ok(shelteredPet)
+            : TypedResults.NotFound());
 
 app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] ListPetModel listPetModel) => 
     await viewModel.AddPet(shelterId, listPetModel)

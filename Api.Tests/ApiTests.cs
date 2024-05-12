@@ -96,8 +96,19 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
         var shelterId = content?.Id.Id;
 
-        var shelterDateListedResponse = await httpClient.GetFromJsonAsync<ShelterEvent>($"/shelters/{shelterId}/history/date-listed");
-        shelterDateListedResponse.ShelterEventKind.Should().Be(ShelterEventKind.ShelterListed);
+        ShelterEvent? shelterDateListedResponse = await httpClient.GetFromJsonAsync<ShelterEvent>($"/shelters/{shelterId}/history/date-listed");
+        
+        shelterDateListedResponse!.ShelterEventKind.Should().Be(ShelterEventKind.ShelterListed);
+    }
+
+    [Fact]
+    public async Task ShelterHistoryDateListed_ShouldReturnNotFound()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        ShelterIdentity shelterId = new(Ulid.Empty);
+
+        var shelterDateListedResponse = await httpClient.GetAsync($"/shelters/{shelterId}/history/date-listed");
+        shelterDateListedResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -129,7 +140,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
         ShelteredPet? sut = await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
         //sut.ShelterIdentity.Should().Be(shelterId);
-        sut.Pet.PetDetails.Name.Should().Be("Sandy");
+        sut!.Pet.PetDetails.Name.Should().Be("Sandy");
     }
 
     [Fact]
@@ -170,9 +181,9 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
         await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Molly"));
 
-        IEnumerable<ShelteredPet> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPet>>($"/shelters/{shelterId}/pets");
+        IEnumerable<ShelteredPet>? sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPet>>($"/shelters/{shelterId}/pets");
         //sut.ShelterIdentity.Should().Be(shelterId);
-        sut.Count().Should().Be(2);
+        sut!.Count().Should().Be(2);
     }
 
     [Fact]
@@ -188,9 +199,9 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
         var petId = petResponseContent?.Pet.Id.Id;
 
-        IEnumerable<ShelteredPetEvent> sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPetEvent>>($"/shelters/{shelterId}/pets/{petId}/history");
-        sut.Count().Should().Be(1);
-        sut.First().PetEventKind.Should().Be(PetEventKind.ListedAtShelter);
+        IEnumerable<ShelteredPetEvent>? sut = await httpClient.GetFromJsonAsync<IEnumerable<ShelteredPetEvent>>($"/shelters/{shelterId}/pets/{petId}/history");
+        sut!.Count().Should().Be(1);
+        sut!.First().PetEventKind.Should().Be(PetEventKind.ListedAtShelter);
     }
 
 
@@ -225,12 +236,12 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
         var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterIdOrigin}/pets", new ListPetModel("Sandy"));
         var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
-        Ulid petId = petResponseContent.Pet.Id.Id;
+        Ulid petId = petResponseContent!.Pet.Id.Id;
 
         var sut = await httpClient.PutAsJsonAsync<string>($"/shelters/{shelterIdOrigin}/pets/{petId}/transfer", shelterIdTarget.ToString());
         sut.StatusCode.Should().Be(HttpStatusCode.OK);
         var sutContent = await sut.Content.ReadFromJsonAsync<ShelteredPetEvent>();
-        sutContent.PetIdentity.Id.Should().Be(petId);
+        sutContent!.PetIdentity.Id.Should().Be(petId);
         sutContent.PetEventKind.Should().Be(PetEventKind.TransferredToAnotherShelter);
     }
 
