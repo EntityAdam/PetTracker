@@ -1,6 +1,5 @@
 ﻿using Core.Interface;
 using Core.Interface.Events;
-using Core.Interface.Models;
 
 public class ShelterPetsHistoryApiViewModel(IDomainFacade facade, TimeProvider timeProvider)
 {
@@ -14,10 +13,6 @@ public class ShelterPetsHistoryApiViewModel(IDomainFacade facade, TimeProvider t
         {
             return null!;
         }
-        var shelterIdentity = new ShelterIdentity(shelterUlid);
-        var petIdentity = new PetIdentity(petUlid, null);
-
-        IEnumerable<ShelteredPetEvent> result = facade.GetShelteredPetHistory(new(shelterUlid), new(petUlid, null));
-        return await Task.FromResult(result);
+        return await Task.FromResult(facade.GetShelteredPetHistory(new(shelterUlid), new(petUlid, null)));
     }
 }

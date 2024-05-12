@@ -87,6 +87,12 @@ app.MapGet("/shelters/{shelterId}/history/date-listed", async Task<Results<Ok<Sh
 
 // --------------------------------------------------  Shelter Pets -------------------------------------------------- //
 
+app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] ListPetModel listPetModel) =>
+    await viewModel.AddPet(shelterId, listPetModel)
+       is ShelteredPet petModel
+         ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
+         : TypedResults.BadRequest());
+
 app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel) => 
     TypedResults.Ok(await viewModel.ListAllPets(shelterId)));
 
@@ -96,11 +102,13 @@ app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<Sheltered
             ? TypedResults.Ok(shelteredPet)
             : TypedResults.NotFound());
 
-app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] ListPetModel listPetModel) => 
-    await viewModel.AddPet(shelterId, listPetModel)
-       is ShelteredPet petModel
-         ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
-         : TypedResults.BadRequest());
+app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] string shelterIdTarget) =>
+    await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
+        is ShelteredPetEvent transferEvent
+        ? TypedResults.Ok(transferEvent)
+        : TypedResults.BadRequest());
+
+// --------------------------------------------------  Shelter Pets History -------------------------------------------------- //
 
 app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, [FromServices] ShelterPetsHistoryApiViewModel viewModel) =>
     await viewModel.GetShelteredPetHistory(shelterId, petId)
@@ -109,31 +117,8 @@ app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<I
         ? TypedResults.Ok(shelteredPetEvents)
         : TypedResults.NotFound());
 
-app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] string shelterIdTarget) => 
-    await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
-        is ShelteredPetEvent transferEvent
-        ? TypedResults.Ok(transferEvent)
-        : TypedResults.BadRequest());
+// --------------------------------------------------  People -------------------------------------------------- //
 
-//app.MapGet("/shelters/{shelterId}/history", async (string shelterId, IShelterApiHandler viewModel) =>
-//    TypedResults.Ok(await viewModel.GetHistoryById(shelterId))).WithName("GetShelterHistoryById");
-
-//app.MapGet("/shelters/{shelterId}/history/{eventKind:int}", async (string shelterId, int eventKind, IShelterApiHandler viewModel) =>
-//    TypedResults.Ok(await viewModel.GetHistoryEventTypeById(shelterId, eventKind))).WithName("GetShelterHistoryByIdAndEvent");
-
-//app.MapGet("/shelters/{shelterId}/events/dateListed", async (string shelterId, IShelterApiHandler viewModel) =>
-//    TypedResults.Ok(await viewModel.GetListedDate(shelterId))).WithName("GetShelterListedDate");
-
-//app.MapGet("shelters/{shelterId}/history/{eventKind}", () => { });
-
-//// get sheltered pets
-//app.MapGet("shelters/{shelterId}/pets", () => { });
-//// get sheltered pet details
-//app.MapGet("shelters/{shelterId}/pets/{petId}", () => { });
-//// get sheltered pet history
-//app.MapGet("shelters/{shelterId}/pets/{petId}/history", () => { });
-//// get sheltered pet history by event kind
-//app.MapGet("shelters/{shelterId}/pets/{petId}/history/{eventKind}", () => { });
 
 //// list foster persons
 //app.MapGet("fosterpersons/", () => { });
