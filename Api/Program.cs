@@ -15,7 +15,10 @@ builder.Services.AddSwaggerGen(options => options.ConfigureSwaggerToAcceptJwtBea
 builder.Services.AddAuthentication().AddJwtBearer();                                    //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-7.0
 builder.Services.AddAuthorization();                                                    //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-7.0
 builder.Services.AddPetTracker();
-builder.Services.AddTransient<IShelterApiHandler, ShelterApiHandler>();
+builder.Services.AddSingleton<ShelterApiViewModel>();
+builder.Services.AddSingleton<ShelterPetsHistoryApiViewModel>();
+builder.Services.AddSingleton<ShelterPetsApiViewModel>();
+builder.Services.AddSingleton<ShelterPetsHistoryApiViewModel>();
 
 //next steps
 //https://auth0.com/docs/get-started/applications/configure-application-metadata
@@ -52,50 +55,50 @@ app.MapGet("/claims", (ClaimsPrincipal user) =>
     return sb.ToString();
 }).RequireAuthorization();
 
-app.MapGet("/shelters", async (IShelterApiHandler viewModel) =>
-    TypedResults.Ok(await viewModel.ShelterList()));
+app.MapGet("/shelters", async (ShelterApiViewModel viewModel) =>
+    TypedResults.Ok(await viewModel.ListAll()));
 
-app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> (IShelterApiHandler viewModel, [FromBody] ShelterModel shelter) =>
-    await viewModel.ShelterCreate(shelter)
+app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> (ShelterApiViewModel viewModel, [FromBody] ShelterModel shelter) =>
+    await viewModel.Create(shelter)
       is Shelter createdShelter
         ? TypedResults.Created($"/shelters/{createdShelter.Id.Id}", createdShelter)
         : TypedResults.BadRequest());
 
-app.MapGet("/shelters/{id}", async Task<Results<Ok<Shelter>, NotFound>> (string id, IShelterApiHandler viewModel) =>
+app.MapGet("/shelters/{id}", async Task<Results<Ok<Shelter>, NotFound>> (string id, ShelterApiViewModel viewModel) =>
     await viewModel.GetById(id) 
       is Shelter shelter
         ? TypedResults.Ok(shelter)
         : TypedResults.NotFound()).WithName("GetShelterById");
 
-app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (string id, IShelterApiHandler viewModel) =>
+app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (string id, ShelterApiViewModel viewModel) =>
     await viewModel.Delete(id)
-      is Shelter shelter
+      is true
         ? TypedResults.NoContent()
         : TypedResults.BadRequest());
 
-app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, IShelterApiHandler viewModel) => 
-    TypedResults.Ok(await viewModel.GetShelteredPets(shelterId)));
+app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, ShelterPetsApiViewModel viewModel) => 
+    TypedResults.Ok(await viewModel.ListAllPets(shelterId)));
 
-app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, IShelterApiHandler viewModel) => 
-    await viewModel.GetShelteredPet(shelterId, petId)
+app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, ShelterPetsApiViewModel viewModel) => 
+    await viewModel.GetPetById(shelterId, petId)
         is ShelteredPet shelteredPet
         ? TypedResults.Ok(shelteredPet)
         : TypedResults.NotFound());
 
-app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, IShelterApiHandler viewModel, [FromBody] ListPetModel listPetModel) => 
-    await viewModel.ListPet(shelterId, listPetModel)
+app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPet>, BadRequest>> (string shelterId, ShelterPetsApiViewModel viewModel, [FromBody] ListPetModel listPetModel) => 
+    await viewModel.AddPet(shelterId, listPetModel)
        is ShelteredPet petModel
          ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
          : TypedResults.BadRequest());
 
-app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, IShelterApiHandler viewModel) =>
+app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, ShelterPetsHistoryApiViewModel viewModel) =>
     await viewModel.GetShelteredPetHistory(shelterId, petId)
         is IEnumerable<ShelteredPetEvent> shelteredPetEvents
         && shelteredPetEvents.Count() > 0
         ? TypedResults.Ok(shelteredPetEvents)
         : TypedResults.NotFound());
 
-app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, IShelterApiHandler viewModel, [FromBody] string shelterIdTarget) => 
+app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, ShelterPetsApiViewModel viewModel, [FromBody] string shelterIdTarget) => 
     await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
         is ShelteredPetEvent transferEvent
         ? TypedResults.Ok(transferEvent)
@@ -107,8 +110,8 @@ app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<
 //app.MapGet("/shelters/{shelterId}/history/{eventKind:int}", async (string shelterId, int eventKind, IShelterApiHandler viewModel) =>
 //    TypedResults.Ok(await viewModel.GetHistoryEventTypeById(shelterId, eventKind))).WithName("GetShelterHistoryByIdAndEvent");
 
-app.MapGet("/shelters/{shelterId}/events/dateListed", async (string shelterId, IShelterApiHandler viewModel) =>
-    TypedResults.Ok(await viewModel.GetListedDate(shelterId))).WithName("GetShelterListedDate");
+//app.MapGet("/shelters/{shelterId}/events/dateListed", async (string shelterId, IShelterApiHandler viewModel) =>
+//    TypedResults.Ok(await viewModel.GetListedDate(shelterId))).WithName("GetShelterListedDate");
 
 //app.MapGet("shelters/{shelterId}/history/{eventKind}", () => { });
 

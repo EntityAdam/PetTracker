@@ -1,5 +1,4 @@
 using IntegrationTests.Helpers;
-using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Net;
@@ -50,6 +49,57 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         using var scope = webFactory.Services.CreateScope();
         var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
         shelterCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task GetShelter_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var shelterGetResponse = await httpClient.GetAsync($"/shelters/{shelterId}");
+
+        shelterGetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetShelter_ShouldRetunNotFound()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        ShelterIdentity shelterId = new(Ulid.Empty);
+
+        var shelterGetResponse = await httpClient.GetAsync($"/shelters/{shelterId}");
+
+        shelterGetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteShelter_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+
+        var shelterDeleteResponse = await httpClient.DeleteAsync($"/shelters/{shelterId}");
+
+        shelterDeleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DeleteNotEmptyShelter_ShouldFail()
+    {
+        using var scope = webFactory.Services.CreateScope();
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content?.Id.Id;
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+
+        var shelterDeleteResponse = await httpClient.DeleteAsync($"/shelters/{shelterId}");
+
+        shelterDeleteResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -204,7 +254,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     //    using var scope = webFactory.Services.CreateScope();
 
     //    _ = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterD"));
-    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "ShelterD"));
+    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new AddPet("Sandy", "ShelterD"));
     //    var listPet = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
 
     //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.OpenToAdopt);
@@ -217,7 +267,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     //{
     //    using var scope = webFactory.Services.CreateScope();
 
-    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "NON-EXISTANT"));
+    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new AddPet("Sandy", "NON-EXISTANT"));
 
     //    listPetResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     //}
@@ -229,7 +279,7 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
     //    _ = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterE"));
     //    _ = await httpClient.PostAsJsonAsync("/shelters/create", new ShelterModel("ShelterF"));
-    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new ListPet("Sandy", "ShelterE"));
+    //    var listPetResponse = await httpClient.PostAsJsonAsync("/shelters/listpet", new AddPet("Sandy", "ShelterE"));
     //    var listPet = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
     //    var transferRequest = new TransferPetByIdToShelterName(listPet.Pet.Id.Id, "ShelterF");
 
