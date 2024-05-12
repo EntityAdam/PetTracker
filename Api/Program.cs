@@ -1,6 +1,7 @@
 using Core.Extensions;
 using Core.Interface.Events;
 using Core.Interface.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -118,6 +119,27 @@ app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<I
         : TypedResults.NotFound());
 
 // --------------------------------------------------  People -------------------------------------------------- //
+
+// users can join with the following intents
+
+// just browsing
+// looking to adopt // can adopt from a shelter only
+// looking to foster // can foster from a shelter only
+// looking for a shelter // can transfer to a shelter
+
+// shelter owners
+//   add their shelter // stretch: some kind of approval process
+//   add their pets
+//   chip pets
+//   medical history pets
+//   remove pets
+//   remove their shelter // stretch: soft delete and purge
+//   transfer pets to adopter
+//   transfer pets to foster
+//   transfer pets to shelter
+
+
+
 
 
 //// list foster persons
