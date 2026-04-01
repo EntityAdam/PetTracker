@@ -6,11 +6,82 @@ namespace PetTracker.Tests;
 public class AccessTests
 {
     [Fact]
-    public void First()
+    public void ShelterCreate_WithShelterRole_ShouldSucceed()
     {
         TestHelper testHelper = new(new FakeTimeProvider());
         User user = testHelper.NewUserInRole("adam@entityadam.com", RoleKind.Shelter);
         ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, user);
+
+        Shelter shelter = new(new(Ulid.NewUlid()), new("Shelter A", string.Empty));
+
+        adapter.ShelterCreate(shelter, testHelper.TimeProvider.GetUtcNow());
+
+        testHelper.Facade.ListShelters().Should().ContainSingle(x => x.Id == shelter.Id);
+    }
+
+    [Fact]
+    public void ShelterCreate_WithoutShelterRole_ShouldThrow()
+    {
+        TestHelper testHelper = new(new FakeTimeProvider());
+        User user = TestHelper.NewUser("adam@entityadam.com");
+        ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, user);
+
+        Shelter shelter = new(new(Ulid.NewUlid()), new("Shelter A", string.Empty));
+
+        var act = () => adapter.ShelterCreate(shelter, testHelper.TimeProvider.GetUtcNow());
+
+        act.Should().Throw<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public void ShelterAddPet_WithoutShelterRole_ShouldThrow()
+    {
+        TestHelper testHelper = new(new FakeTimeProvider());
+        User authorizedUser = testHelper.NewUserInRole("owner@entityadam.com", RoleKind.Shelter);
+        ShelterAccessAdapter authorizedAdapter = new(testHelper.UserStore, testHelper.Facade, authorizedUser);
+        Shelter shelter = new(new(Ulid.NewUlid()), new("Shelter A", string.Empty));
+        authorizedAdapter.ShelterCreate(shelter, testHelper.TimeProvider.GetUtcNow());
+
+        User unauthorizedUser = TestHelper.NewUser("anonymous@entityadam.com");
+        ShelterAccessAdapter unauthorizedAdapter = new(testHelper.UserStore, testHelper.Facade, unauthorizedUser);
+        Pet pet = Pet.CreateNewWithName("Sandy");
+        ShelteredPet shelteredPet = new(pet, shelter.Id);
+
+        var act = () => unauthorizedAdapter.ShelterAddPet(shelteredPet, testHelper.TimeProvider.GetUtcNow());
+
+        act.Should().Throw<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public void ListShelters_WithoutShelterRole_ShouldThrow()
+    {
+        TestHelper testHelper = new(new FakeTimeProvider());
+        User user = TestHelper.NewUser("anonymous@entityadam.com");
+        ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, user);
+
+        var act = () => adapter.ListShelters();
+
+        act.Should().Throw<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public void GetShelteredPetDetails_WithShelterRole_ShouldReturnPet()
+    {
+        TestHelper testHelper = new(new FakeTimeProvider());
+        User user = testHelper.NewUserInRole("owner@entityadam.com", RoleKind.Shelter);
+        ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, user);
+
+        Shelter shelter = new(new(Ulid.NewUlid()), new("Shelter A", string.Empty));
+        adapter.ShelterCreate(shelter, testHelper.TimeProvider.GetUtcNow());
+
+        Pet pet = Pet.CreateNewWithName("Sandy");
+        ShelteredPet shelteredPet = new(pet, shelter.Id);
+        adapter.ShelterAddPet(shelteredPet, testHelper.TimeProvider.GetUtcNow());
+
+        var result = adapter.GetShelteredPetDetails(shelter.Id, pet.Id);
+
+        result.Should().NotBeNull();
+        result!.Pet.Id.Should().Be(pet.Id);
     }
 }
 
@@ -25,6 +96,7 @@ public class TestHelper
 
     public Facade Facade => facade;
     public UserRoleStoreInMemory UserStore => userStore;
+    public TimeProvider TimeProvider => timeProvider;
 
     public TestHelper(TimeProvider timeProvider)
     {

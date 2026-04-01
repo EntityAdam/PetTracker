@@ -1,7 +1,7 @@
 ﻿using Core.Interface;
 using Core.Interface.Events;
 
-public class ShelterHistoryApiViewModel(IShelterHistoryFacade facade, TimeProvider timeProvider)
+public class ShelterHistoryApiViewModel(IShelterHistoryFacade facade)
 {
     public Task<IEnumerable<ShelterEvent>> GetHistoryById(string shelterId)
     {
@@ -13,15 +13,22 @@ public class ShelterHistoryApiViewModel(IShelterHistoryFacade facade, TimeProvid
         throw new NotImplementedException();
     }
 
-    public async Task<ShelterEvent> GetListedDate(string shelterId)
+    public async Task<ShelterEvent?> GetListedDate(string shelterId)
     {
         if (!Ulid.TryParse(shelterId, out var ulid))
         {
-            return null!;
+            return null;
         }
 
-        var result = facade.GetShelterDateListedByShelter(new(ulid));
-        return await Task.FromResult(result);
+        try
+        {
+            var result = facade.GetShelterDateListedByShelter(new(ulid));
+            return await Task.FromResult(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
 
     }
 }

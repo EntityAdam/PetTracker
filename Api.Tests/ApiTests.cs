@@ -187,6 +187,43 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task GetShelterPets_WithInvalidShelterId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.GetAsync("/shelters/not-a-valid-ulid/pets");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ListPet_ForMissingShelter_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.PostAsJsonAsync($"/shelters/{Ulid.NewUlid()}/pets", new ListPetModel("Sandy"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task TransferPet_WithInvalidTargetShelterId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content!.Id.Id;
+
+        var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
+        var petContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+
+        var response = await httpClient.PutAsJsonAsync($"/shelters/{shelterId}/pets/{petContent!.Pet.Id.Id}/transfer", "not-a-valid-ulid");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task GetShelterdPetHistory_ShouldSucceed()
     {
         using var scope = webFactory.Services.CreateScope();

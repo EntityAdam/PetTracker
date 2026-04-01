@@ -80,10 +80,15 @@ Current caveats:
 
 - Several API view model methods return null-forgiving values on invalid parse paths, relying on endpoint mapping behavior.
 - Access adapter methods are mostly scaffolded/commented out, so role-gated domain command surface is incomplete.
-- Legacy/experimental attempt files (FirstAttempt/SecondAttempt/ThirdAttempt) remain in repository as historical design artifacts.
+- API semantics for malformed IDs are still mixed between `400` and `404` depending on endpoint intent.
+- Access control is now implemented for shelter commands via `ShelterAccessAdapter`, but it is not yet wired into the HTTP layer.
 
 Recently addressed:
 
+- Removed legacy/experimental attempt files that were not referenced by the runtime codebase.
+- API view models now return nullable results intentionally rather than using null-forgiving fallback values for parse failures.
+- Shelter pet list endpoint now returns `400 Bad Request` for malformed shelter IDs.
+- Shelter access adapter now enforces role checks for create/delete/pet-management commands and is covered by tests.
 - Shelter pet transfer now parses target shelter ID from shelterIdTarget correctly.
 - Shelter pet transfer now returns persisted history data rather than a placeholder event.
 - HistoryProviderInMemeory.RemovePetHistory(PetIdentity, ShelterIdentity) is implemented.

@@ -4,26 +4,35 @@ using Core.Interface.Models;
 
 public class ShelterPetsApiViewModel(IShelterPetsFacade facade, IDomainFacade domainFacade, TimeProvider timeProvider)
 {
-    public async Task<ShelteredPet> AddPet(string shelterId, ListPetModel listPetModel)
+    public async Task<ShelteredPet?> AddPet(string shelterId, ListPetModel listPetModel)
     {
         if (!Ulid.TryParse(shelterId, out var ulid))
         {
-            return null!;
+            return null;
         }
         var shelterUlid = ulid;
         var petDetails = new PetDetails(listPetModel.Name);
         var petIdentity = new PetIdentity(Ulid.NewUlid(), null);
         var pet = new Pet(petIdentity, petDetails);
         var shelteredPet = new ShelteredPet(pet, new ShelterIdentity(shelterUlid));
-        facade.ShelterAddPet(shelteredPet, timeProvider.GetUtcNow());
+
+        try
+        {
+            facade.ShelterAddPet(shelteredPet, timeProvider.GetUtcNow());
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+
         return await Task.FromResult<ShelteredPet>(shelteredPet);
     }
 
-    public async Task<IEnumerable<ShelteredPet>> ListAllPets(string shelterId)
+    public async Task<IEnumerable<ShelteredPet>?> ListAllPets(string shelterId)
     {
         if (!Ulid.TryParse(shelterId, out var shelterUlid))
         {
-            return null!;
+            return null;
         }
         var result = facade.GetShelteredPets(new ShelterIdentity(shelterUlid));
         return await Task.FromResult(result);
@@ -33,11 +42,11 @@ public class ShelterPetsApiViewModel(IShelterPetsFacade facade, IDomainFacade do
     {
         if (!Ulid.TryParse(shelterId, out var shelterUlid))
         {
-            return null!;
+            return null;
         }
         if (!Ulid.TryParse(petId, out var petUlid))
         {
-            return null!;
+            return null;
         }
         var shelterIdentity = new ShelterIdentity(shelterUlid);
         var petIdentity = new PetIdentity(petUlid, null);
@@ -46,19 +55,19 @@ public class ShelterPetsApiViewModel(IShelterPetsFacade facade, IDomainFacade do
         return await Task.FromResult(result);
     }
 
-    public async Task<ShelteredPetEvent> TransferPet(string shelterId, string petId, string shelterIdTarget)
+    public async Task<ShelteredPetEvent?> TransferPet(string shelterId, string petId, string shelterIdTarget)
     {
         if (!Ulid.TryParse(shelterId, out var shelterUlid))
         {
-            return null!;
+            return null;
         }
         if (!Ulid.TryParse(petId, out var petUlid))
         {
-            return null!;
+            return null;
         }
         if (!Ulid.TryParse(shelterIdTarget, out var shelterUlidTarget))
         {
-            return null!;
+            return null;
         }
 
         var petIdentity = new PetIdentity(petUlid, null);
@@ -66,16 +75,23 @@ public class ShelterPetsApiViewModel(IShelterPetsFacade facade, IDomainFacade do
         var shelteredPet = facade.GetShelteredPetDetails(shelterIdentity, petIdentity);
         if (shelteredPet is null)
         {
-            return null!;
+            return null;
         }
 
         var shelterIdentityTarget = new ShelterIdentity(shelterUlidTarget);
-        facade.ShelterTransferPet(shelteredPet, shelterIdentityTarget);
+        try
+        {
+            facade.ShelterTransferPet(shelteredPet, shelterIdentityTarget);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
 
         var result = domainFacade.GetPetHistory(petIdentity).LastOrDefault();
         if (result is null)
         {
-            return null!;
+            return null;
         }
 
         return await Task.FromResult(result);

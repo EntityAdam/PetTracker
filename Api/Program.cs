@@ -93,8 +93,11 @@ app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPe
          ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
          : TypedResults.BadRequest());
 
-app.MapGet("/shelters/{shelterId}/pets", async (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel) => 
-    TypedResults.Ok(await viewModel.ListAllPets(shelterId)));
+app.MapGet("/shelters/{shelterId}/pets", async Task<Results<Ok<IEnumerable<ShelteredPet>>, BadRequest>> (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel) =>
+    await viewModel.ListAllPets(shelterId)
+        is IEnumerable<ShelteredPet> shelteredPets
+        ? TypedResults.Ok(shelteredPets)
+        : TypedResults.BadRequest());
 
 app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel) => 
     await viewModel.GetPetById(shelterId, petId)
@@ -162,7 +165,7 @@ app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<I
 //// list adopter person pets
 //app.MapGet("adopterpersons/{adoperPersonId}/pets", () => { });
 //// get adopter person pet details
-//app.MapGet("adopterpersons/{adopterPersonId}/pets/{petId}", () => { });
+//app.MapGet("adopterpersons/{aFdopterPersonId}/pets/{petId}", () => { });
 //// get adopter person pet history
 //app.MapGet("adopterpersons/{adopterPersonId}/pets/{petId}/history", () => { });
 //// get adopter person pet history by event kind

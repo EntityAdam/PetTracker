@@ -3,8 +3,13 @@ using Core.Interface.Models;
 
 public class ShelterApiViewModel(IShelterFacade facade, TimeProvider timeProvider)
 {
-    public async Task<Shelter> Create(ShelterModel shelter)
+    public async Task<Shelter?> Create(ShelterModel shelter)
     {
+        if (string.IsNullOrWhiteSpace(shelter.Name))
+        {
+            return null;
+        }
+
         var create = NewEmptyShelter(shelter.Name);
         facade.ShelterCreate(create, timeProvider.GetUtcNow());
         return await Task.FromResult(create);
@@ -12,10 +17,15 @@ public class ShelterApiViewModel(IShelterFacade facade, TimeProvider timeProvide
 
     public async Task<IEnumerable<Shelter>> ListAll() => await Task.FromResult(facade.ListShelters());
 
-    public async Task<Shelter> GetById(string id)
+    public async Task<Shelter?> GetById(string id)
     {
+        if (!Ulid.TryParse(id, out _))
+        {
+            return null;
+        }
+
         var result = facade.ListShelters().FirstOrDefault(x => x.Id.Id.ToString() == id);
-        return await Task.FromResult(result!);
+        return await Task.FromResult(result);
     }
 
     public async Task<bool> Delete(string shelterId)
