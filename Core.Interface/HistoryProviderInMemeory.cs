@@ -86,12 +86,12 @@ public class HistoryProviderInMemeory : IHistoryProvider
 
     public int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity)
     {
-        return ShelterEvents.Count(e => e.ShelterEventKind == ShelterEventKind.PetFostered);
+        return ShelterEvents.Count(e => e.ShelterIdentity == shelterIdentity && e.ShelterEventKind == ShelterEventKind.PetFostered);
     }
 
-    public ShelterEvent GetShelterDateListedByShelter(ShelterIdentity person)
+    public ShelterEvent GetShelterDateListedByShelter(ShelterIdentity shelterIdentity)
     {
-        return ShelterEvents.First(e => e.ShelterEventKind == ShelterEventKind.ShelterListed);
+        return ShelterEvents.FirstOrDefault(e => e.ShelterIdentity == shelterIdentity && e.ShelterEventKind == ShelterEventKind.ShelterListed)!;
     }
 
     public IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity person)
@@ -101,12 +101,12 @@ public class HistoryProviderInMemeory : IHistoryProvider
 
     public int GetPetsListedCountByShelter(ShelterIdentity shelter)
     {
-        return ShelterEvents.Count(e => e.ShelterEventKind == ShelterEventKind.PetListed);
+        return ShelterEvents.Count(e => e.ShelterIdentity == shelter && e.ShelterEventKind == ShelterEventKind.PetListed);
     }
 
     public int GetPetsAdoptedCountByShelter(ShelterIdentity shelter)
     {
-        return ShelterEvents.Count(e => e.ShelterEventKind == ShelterEventKind.PetAdopted);
+        return ShelterEvents.Count(e => e.ShelterIdentity == shelter && e.ShelterEventKind == ShelterEventKind.PetAdopted);
     }
 
     public void ShelteredPetEventTransferred(PetIdentity petIdentity, ShelterIdentity shelterIdentity)
@@ -117,7 +117,7 @@ public class HistoryProviderInMemeory : IHistoryProvider
 
     public void RemovePetHistory(PetIdentity petIdentity, ShelterIdentity shelterIdentity)
     {
-        throw new NotImplementedException();
+        PetEvents.RemoveAll(p => p.PetIdentity == petIdentity);
     }
 
     public void PersonOpenToAdoption(PersonIdentity adopterPerson)

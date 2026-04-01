@@ -2,7 +2,7 @@
 using Core.Interface.Events;
 using Core.Interface.Models;
 
-public class ShelterPetsApiViewModel(IShelterPetsFacade facade, TimeProvider timeProvider)
+public class ShelterPetsApiViewModel(IShelterPetsFacade facade, IDomainFacade domainFacade, TimeProvider timeProvider)
 {
     public async Task<ShelteredPet> AddPet(string shelterId, ListPetModel listPetModel)
     {
@@ -56,7 +56,7 @@ public class ShelterPetsApiViewModel(IShelterPetsFacade facade, TimeProvider tim
         {
             return null!;
         }
-        if (!Ulid.TryParse(petId, out var shelterUlidTarget))
+        if (!Ulid.TryParse(shelterIdTarget, out var shelterUlidTarget))
         {
             return null!;
         }
@@ -64,13 +64,20 @@ public class ShelterPetsApiViewModel(IShelterPetsFacade facade, TimeProvider tim
         var petIdentity = new PetIdentity(petUlid, null);
         var shelterIdentity = new ShelterIdentity(shelterUlid);
         var shelteredPet = facade.GetShelteredPetDetails(shelterIdentity, petIdentity);
+        if (shelteredPet is null)
+        {
+            return null!;
+        }
+
         var shelterIdentityTarget = new ShelterIdentity(shelterUlidTarget);
         facade.ShelterTransferPet(shelteredPet, shelterIdentityTarget);
-        
-        //TODO FIX
-        //var result = facade.GetPetHistory(petIdentity).Last();
-        var result = new ShelteredPetEvent(petIdentity, PetEventKind.TransferredToAnotherShelter, timeProvider.GetUtcNow());
-        
+
+        var result = domainFacade.GetPetHistory(petIdentity).LastOrDefault();
+        if (result is null)
+        {
+            return null!;
+        }
+
         return await Task.FromResult(result);
     }
 }

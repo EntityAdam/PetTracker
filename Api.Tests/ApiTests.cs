@@ -243,6 +243,12 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         var sutContent = await sut.Content.ReadFromJsonAsync<ShelteredPetEvent>();
         sutContent!.PetIdentity.Id.Should().Be(petId);
         sutContent.PetEventKind.Should().Be(PetEventKind.TransferredToAnotherShelter);
+
+        var targetLookup = await httpClient.GetAsync($"/shelters/{shelterIdTarget}/pets/{petId}");
+        targetLookup.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var originLookup = await httpClient.GetAsync($"/shelters/{shelterIdOrigin}/pets/{petId}");
+        originLookup.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     //// Shelter create only takes in a name
