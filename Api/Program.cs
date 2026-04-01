@@ -65,11 +65,18 @@ app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> ([Fro
 app.MapGet("/shelters", async (ShelterApiViewModel viewModel) =>
     TypedResults.Ok(await viewModel.ListAll()));
 
-app.MapGet("/shelters/{id}", async Task<Results<Ok<Shelter>, NotFound>> (string id, [FromServices] ShelterApiViewModel viewModel) =>
-    await viewModel.GetById(id) 
-      is Shelter shelter
-        ? TypedResults.Ok(shelter)
-        : TypedResults.NotFound()).WithName("GetShelterById");
+app.MapGet("/shelters/{id}", async Task<Results<Ok<Shelter>, NotFound, BadRequest>> (string id, [FromServices] ShelterApiViewModel viewModel) =>
+{
+        if (!Ulid.TryParse(id, out _))
+        {
+                return TypedResults.BadRequest();
+        }
+
+        return await viewModel.GetById(id)
+            is Shelter shelter
+                ? TypedResults.Ok(shelter)
+                : TypedResults.NotFound();
+}).WithName("GetShelterById");
 
 app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (string id, [FromServices] ShelterApiViewModel viewModel) =>
     await viewModel.Delete(id)
@@ -79,11 +86,18 @@ app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (stri
 
 // --------------------------------------------------  Shelters History -------------------------------------------------- //
 
-app.MapGet("/shelters/{shelterId}/history/date-listed", async Task<Results<Ok<ShelterEvent>, NotFound>> (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
-    await viewModel.GetListedDate(shelterId)
+app.MapGet("/shelters/{shelterId}/history/date-listed", async Task<Results<Ok<ShelterEvent>, NotFound, BadRequest>> (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetListedDate(shelterId)
         is ShelterEvent shelterEvent
             ? TypedResults.Ok(shelterEvent)
-            : TypedResults.NotFound());
+            : TypedResults.NotFound();
+});
 
 // --------------------------------------------------  Shelter Pets -------------------------------------------------- //
 
@@ -99,11 +113,18 @@ app.MapGet("/shelters/{shelterId}/pets", async Task<Results<Ok<IEnumerable<Shelt
         ? TypedResults.Ok(shelteredPets)
         : TypedResults.BadRequest());
 
-app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel) => 
-    await viewModel.GetPetById(shelterId, petId)
+app.MapGet("/shelters/{shelterId}/pets/{petId}", async Task<Results<Ok<ShelteredPet>, NotFound, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Ulid.TryParse(petId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetPetById(shelterId, petId)
         is ShelteredPet shelteredPet
             ? TypedResults.Ok(shelteredPet)
-            : TypedResults.NotFound());
+            : TypedResults.NotFound();
+});
 
 app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsApiViewModel viewModel, [FromBody] string shelterIdTarget) =>
     await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
@@ -113,12 +134,19 @@ app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<
 
 // --------------------------------------------------  Shelter Pets History -------------------------------------------------- //
 
-app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound>> (string shelterId, string petId, [FromServices] ShelterPetsHistoryApiViewModel viewModel) =>
-    await viewModel.GetShelteredPetHistory(shelterId, petId)
+app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsHistoryApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Ulid.TryParse(petId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetShelteredPetHistory(shelterId, petId)
         is IEnumerable<ShelteredPetEvent> shelteredPetEvents
         && shelteredPetEvents.Count() > 0
         ? TypedResults.Ok(shelteredPetEvents)
-        : TypedResults.NotFound());
+        : TypedResults.NotFound();
+});
 
 // --------------------------------------------------  People -------------------------------------------------- //
 

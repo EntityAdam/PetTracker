@@ -52,6 +52,16 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task CreateShelter_WithBlankName_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("   "));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task GetShelter_ShouldSucceed()
     {
         using var scope = webFactory.Services.CreateScope();
@@ -68,11 +78,21 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     public async Task GetShelter_ShouldRetunNotFound()
     {
         using var scope = webFactory.Services.CreateScope();
-        ShelterIdentity shelterId = new(Ulid.Empty);
+        ShelterIdentity shelterId = new(Ulid.NewUlid());
 
-        var shelterGetResponse = await httpClient.GetAsync($"/shelters/{shelterId}");
+        var shelterGetResponse = await httpClient.GetAsync($"/shelters/{shelterId.Id}");
 
         shelterGetResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetShelter_WithInvalidId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.GetAsync("/shelters/not-a-valid-ulid");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -105,10 +125,20 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     public async Task ShelterHistoryDateListed_ShouldReturnNotFound()
     {
         using var scope = webFactory.Services.CreateScope();
-        ShelterIdentity shelterId = new(Ulid.Empty);
+        ShelterIdentity shelterId = new(Ulid.NewUlid());
 
-        var shelterDateListedResponse = await httpClient.GetAsync($"/shelters/{shelterId}/history/date-listed");
+        var shelterDateListedResponse = await httpClient.GetAsync($"/shelters/{shelterId.Id}/history/date-listed");
         shelterDateListedResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ShelterHistoryDateListed_WithInvalidId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.GetAsync("/shelters/not-a-valid-ulid/history/date-listed");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -167,6 +197,20 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
         var sut = async () => await httpClient.GetFromJsonAsync<ShelteredPet>($"/shelters/{shelterId}/pets/{petId}");
         await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetShelterdPets_WithInvalidPetId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content!.Id.Id;
+
+        var response = await httpClient.GetAsync($"/shelters/{shelterId}/pets/not-a-valid-ulid");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -255,6 +299,20 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
         var sut = async () => await httpClient.GetFromJsonAsync<ShelteredPetEvent>($"/shelters/{shelterId}/pets/{petId}/history");
         await sut.Should().ThrowAsync<HttpRequestException>().Where(ex => ex.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetShelterdPetHistory_WithInvalidPetId_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var content = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+        var shelterId = content!.Id.Id;
+
+        var response = await httpClient.GetAsync($"/shelters/{shelterId}/pets/not-a-valid-ulid/history");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

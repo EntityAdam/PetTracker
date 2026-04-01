@@ -78,17 +78,16 @@ PetTracker.Tests currently contains basic access-layer construction/wiring check
 ## Notable Implementation Gaps and Risks
 Current caveats:
 
-- Several API view model methods return null-forgiving values on invalid parse paths, relying on endpoint mapping behavior.
-- Access adapter methods are mostly scaffolded/commented out, so role-gated domain command surface is incomplete.
-- API semantics for malformed IDs are still mixed between `400` and `404` depending on endpoint intent.
 - Access control is now implemented for shelter commands via `ShelterAccessAdapter`, but it is not yet wired into the HTTP layer.
+- One API integration test still has a nullable warning around `PutAsJsonAsync` request payload typing.
 
 Recently addressed:
 
 - Removed legacy/experimental attempt files that were not referenced by the runtime codebase.
 - API view models now return nullable results intentionally rather than using null-forgiving fallback values for parse failures.
-- Shelter pet list endpoint now returns `400 Bad Request` for malformed shelter IDs.
-- Shelter access adapter now enforces role checks for create/delete/pet-management commands and is covered by tests.
+- Read endpoints now distinguish malformed ULID route values as `400 Bad Request` and valid-but-missing resources as `404 Not Found`.
+- Added regression coverage for malformed shelter IDs, malformed pet IDs, and invalid shelter creation payloads.
+- Shelter access adapter now implements the shelter/shelter-pet facade contracts, enforces role checks, and is covered by tests.
 - Shelter pet transfer now parses target shelter ID from shelterIdTarget correctly.
 - Shelter pet transfer now returns persisted history data rather than a placeholder event.
 - HistoryProviderInMemeory.RemovePetHistory(PetIdentity, ShelterIdentity) is implemented.
