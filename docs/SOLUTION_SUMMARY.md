@@ -56,6 +56,8 @@ Currently implemented and wired endpoints:
 - People and outcomes:
   - POST /fosterpersons
   - POST /adopterpersons
+  - GET /fosterpersons/{fosterPersonId}/history
+  - GET /fosterpersons/{fosterPersonId}/history/{eventKind}
   - PUT /shelters/{shelterId}/pets/{petId}/foster/{fosterPersonId}
   - PUT /shelters/{shelterId}/pets/{petId}/adopt/{adopterPersonId}
   - PUT /shelters/{shelterId}/pets/{petId}/outcome
@@ -78,7 +80,7 @@ Api.Tests covers key happy-path and failure-path scenarios for the active endpoi
 - Shelter CRUD-like flows.
 - Shelter history listing, filtered history, and date-listed queries.
 - Pet listing, retrieval, listing-all, history retrieval, and transfer behavior.
-- Foster/adopter creation and pet assignment/outcome flows.
+- Foster/adopter creation, foster-history queries, and pet assignment/outcome flows.
 - Bad-request vs not-found behavior for malformed IDs and missing resources.
 
 PetTracker.Tests covers shelter access adapter authorization behavior and contract-level shelter operations.
@@ -96,6 +98,7 @@ Recently addressed:
 - Replaced dead `NotImplementedException` shelter-history view model methods with working shelter history queries.
 - API view models now return nullable results intentionally rather than using null-forgiving fallback values for parse failures.
 - Read endpoints now distinguish malformed ULID route values as `400 Bad Request` and valid-but-missing resources as `404 Not Found`.
+- Added foster person history endpoints with event-kind filtering and validation.
 - Added regression coverage for malformed shelter IDs, malformed pet IDs, and invalid shelter creation payloads.
 - Shelter access adapter now implements the shelter/shelter-pet facade contracts, enforces role checks, and is exercised by tests.
 - Shelter pet transfer now parses target shelter ID from shelterIdTarget correctly.

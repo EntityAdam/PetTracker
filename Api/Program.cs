@@ -265,6 +265,39 @@ app.MapPut("/shelters/{shelterId}/pets/{petId}/outcome", async Task<Results<Ok<S
         : TypedResults.BadRequest();
 }).RequireAuthorization("shelter-policy");
 
+app.MapGet("/fosterpersons/{fosterPersonId}/history", async Task<Results<Ok<IEnumerable<FosterPersonEvent>>, NotFound, BadRequest>> (
+    string fosterPersonId,
+    [FromServices] ShelterPeopleApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(fosterPersonId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetFosterPersonHistory(fosterPersonId)
+        is IEnumerable<FosterPersonEvent> fosterPersonEvents
+        && fosterPersonEvents.Any()
+        ? TypedResults.Ok(fosterPersonEvents)
+        : TypedResults.NotFound();
+});
+
+app.MapGet("/fosterpersons/{fosterPersonId}/history/{eventKind:int}", async Task<Results<Ok<IEnumerable<FosterPersonEvent>>, NotFound, BadRequest>> (
+    string fosterPersonId,
+    int eventKind,
+    [FromServices] ShelterPeopleApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(fosterPersonId, out _) || !Enum.IsDefined(typeof(FosterPersonEventKind), eventKind))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetFosterPersonHistoryByEventKind(fosterPersonId, eventKind)
+        is IEnumerable<FosterPersonEvent> fosterPersonEvents
+        && fosterPersonEvents.Any()
+        ? TypedResults.Ok(fosterPersonEvents)
+        : TypedResults.NotFound();
+});
+
 // --------------------------------------------------  Shelter Pets History -------------------------------------------------- //
 
 app.MapGet("/shelters/{shelterId}/pets/{petId}/history", async Task<Results<Ok<IEnumerable<ShelteredPetEvent>>, NotFound, BadRequest>> (string shelterId, string petId, [FromServices] ShelterPetsHistoryApiViewModel viewModel) =>

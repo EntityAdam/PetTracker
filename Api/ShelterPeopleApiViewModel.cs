@@ -138,6 +138,39 @@ public class ShelterPeopleApiViewModel(IDomainFacade domainFacade, IShelterPetsF
         return await Task.FromResult(result);
     }
 
+    public async Task<IEnumerable<FosterPersonEvent>?> GetFosterPersonHistory(string fosterPersonId)
+    {
+        if (!Ulid.TryParse(fosterPersonId, out var fosterPersonUlid))
+        {
+            return null;
+        }
+
+        var personIdentity = new PersonIdentity(fosterPersonUlid);
+        var result = domainFacade.GetFosterPersonHistory(personIdentity);
+        return await Task.FromResult(result);
+    }
+
+    public async Task<IEnumerable<FosterPersonEvent>?> GetFosterPersonHistoryByEventKind(string fosterPersonId, int eventKind)
+    {
+        if (!Ulid.TryParse(fosterPersonId, out var fosterPersonUlid))
+        {
+            return null;
+        }
+
+        if (!Enum.IsDefined(typeof(FosterPersonEventKind), eventKind))
+        {
+            return null;
+        }
+
+        var personIdentity = new PersonIdentity(fosterPersonUlid);
+        var result = domainFacade
+            .GetFosterPersonHistory(personIdentity)
+            .Where(x => x.FosterPersonEventKind == (FosterPersonEventKind)eventKind)
+            .ToList();
+
+        return await Task.FromResult<IEnumerable<FosterPersonEvent>>(result);
+    }
+
     private static bool TryParseIds(string shelterId, string petId, out ShelterIdentity shelterIdentity, out PetIdentity petIdentity)
     {
         shelterIdentity = new ShelterIdentity(Ulid.Empty);

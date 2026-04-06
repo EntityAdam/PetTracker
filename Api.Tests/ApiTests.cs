@@ -437,6 +437,61 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task GetFosterPersonHistory_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var createResponse = await httpClient.PostAsJsonAsync("/fosterpersons", new CreateFosterPersonModel("Foster One", 2));
+        var fosterPerson = await createResponse.Content.ReadFromJsonAsync<FosterPerson>();
+
+        var history = await httpClient.GetFromJsonAsync<IEnumerable<FosterPersonEvent>>($"/fosterpersons/{fosterPerson!.Id.Id}/history");
+
+        history.Should().NotBeNull();
+        var events = history!;
+        events.Should().ContainSingle();
+        events.First().FosterPersonEventKind.Should().Be(FosterPersonEventKind.FosterPersonJoin);
+    }
+
+    [Fact]
+    public async Task GetFosterPersonHistoryByEventKind_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var createResponse = await httpClient.PostAsJsonAsync("/fosterpersons", new CreateFosterPersonModel("Foster One", 2));
+        var fosterPerson = await createResponse.Content.ReadFromJsonAsync<FosterPerson>();
+
+        var history = await httpClient.GetFromJsonAsync<IEnumerable<FosterPersonEvent>>($"/fosterpersons/{fosterPerson!.Id.Id}/history/{(int)FosterPersonEventKind.FosterPersonJoin}");
+
+        history.Should().NotBeNull();
+        var events = history!;
+        events.Should().ContainSingle();
+        events.All(x => x.FosterPersonEventKind == FosterPersonEventKind.FosterPersonJoin).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetFosterPersonHistoryByEventKind_WithInvalidKind_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var createResponse = await httpClient.PostAsJsonAsync("/fosterpersons", new CreateFosterPersonModel("Foster One", 2));
+        var fosterPerson = await createResponse.Content.ReadFromJsonAsync<FosterPerson>();
+
+        var response = await httpClient.GetAsync($"/fosterpersons/{fosterPerson!.Id.Id}/history/999");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetFosterPersonHistory_WithMissingPerson_ShouldReturnNotFound()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.GetAsync($"/fosterpersons/{Ulid.NewUlid()}/history");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task AssignPetToFoster_ShouldSucceed()
     {
         using var scope = webFactory.Services.CreateScope();
