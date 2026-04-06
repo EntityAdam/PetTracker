@@ -153,6 +153,28 @@ public class EfCoreHistoryProvider : IHistoryProvider
         return new ShelterEvent(shelterIdentity, ShelterEventKind.ShelterListed, row.Timestamp);
     }
 
+    public IEnumerable<ShelterEvent> GetShelterHistory(ShelterIdentity shelterIdentity)
+    {
+        return db.ShelterEvents
+            .AsNoTracking()
+            .Where(e => e.ShelterId == shelterIdentity.Id.ToString())
+            .Select(e => new ShelterEvent(shelterIdentity, Enum.Parse<ShelterEventKind>(e.EventKind), e.Timestamp))
+            .AsEnumerable()
+            .OrderBy(e => e.Timestamp)
+            .ToList();
+    }
+
+    public IEnumerable<ShelterEvent> GetShelterHistoryByEventKind(ShelterIdentity shelterIdentity, ShelterEventKind eventKind)
+    {
+        return db.ShelterEvents
+            .AsNoTracking()
+            .Where(e => e.ShelterId == shelterIdentity.Id.ToString() && e.EventKind == eventKind.ToString())
+            .Select(e => new ShelterEvent(shelterIdentity, eventKind, e.Timestamp))
+            .AsEnumerable()
+            .OrderBy(e => e.Timestamp)
+            .ToList();
+    }
+
     public IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity personIdentity)
     {
         return db.FosterPersonEvents

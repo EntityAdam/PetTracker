@@ -5,6 +5,8 @@ namespace Core.Interface
 {
     public interface IShelterHistoryFacade
     {
+        IEnumerable<ShelterEvent> GetShelterHistory(ShelterIdentity shelterIdentity);
+        IEnumerable<ShelterEvent> GetShelterHistoryByEventKind(ShelterIdentity shelterIdentity, ShelterEventKind eventKind);
         ShelterEvent GetShelterDateListedByShelter(ShelterIdentity shelterIdentity);
     }
 }

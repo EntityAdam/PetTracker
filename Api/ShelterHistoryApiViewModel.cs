@@ -3,14 +3,31 @@ using Core.Interface.Events;
 
 public class ShelterHistoryApiViewModel(IShelterHistoryFacade facade)
 {
-    public Task<IEnumerable<ShelterEvent>> GetHistoryById(string shelterId)
+    public async Task<IEnumerable<ShelterEvent>?> GetHistoryById(string shelterId)
     {
-        throw new NotImplementedException();
+        if (!Ulid.TryParse(shelterId, out var ulid))
+        {
+            return null;
+        }
+
+        var result = facade.GetShelterHistory(new(ulid));
+        return await Task.FromResult(result);
     }
 
-    public Task<IEnumerable<ShelterEvent>> GetHistoryEventTypeById(string shelterId, int eventKind)
+    public async Task<IEnumerable<ShelterEvent>?> GetHistoryEventTypeById(string shelterId, int eventKind)
     {
-        throw new NotImplementedException();
+        if (!Ulid.TryParse(shelterId, out var ulid))
+        {
+            return null;
+        }
+
+        if (!Enum.IsDefined(typeof(ShelterEventKind), eventKind))
+        {
+            return null;
+        }
+
+        var result = facade.GetShelterHistoryByEventKind(new(ulid), (ShelterEventKind)eventKind);
+        return await Task.FromResult(result);
     }
 
     public async Task<ShelterEvent?> GetListedDate(string shelterId)

@@ -122,6 +122,54 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task ShelterHistory_ShouldReturnShelterEvents()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var shelter = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+
+        await httpClient.PostAsJsonAsync($"/shelters/{shelter!.Id.Id}/pets", new ListPetModel("Sandy"));
+
+        var response = await httpClient.GetFromJsonAsync<IEnumerable<ShelterEvent>>($"/shelters/{shelter.Id.Id}/history");
+
+        response.Should().NotBeNull();
+        response!.Select(x => x.ShelterEventKind).Should().Contain(new[] { ShelterEventKind.ShelterListed, ShelterEventKind.PetListed });
+    }
+
+    [Fact]
+    public async Task ShelterHistory_ByEventKind_ShouldReturnFilteredEvents()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var shelter = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+
+        await httpClient.PostAsJsonAsync($"/shelters/{shelter!.Id.Id}/pets", new ListPetModel("Sandy"));
+        await httpClient.PostAsJsonAsync($"/shelters/{shelter.Id.Id}/pets", new ListPetModel("Molly"));
+
+        var response = await httpClient.GetFromJsonAsync<IEnumerable<ShelterEvent>>($"/shelters/{shelter.Id.Id}/history/{(int)ShelterEventKind.PetListed}");
+
+        response.Should().NotBeNull();
+        var events = response!;
+        events.Should().HaveCount(2);
+        events.All(x => x.ShelterEventKind == ShelterEventKind.PetListed).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ShelterHistory_ByInvalidEventKind_ShouldReturnBadRequest()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterCreateResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("ShelterA"));
+        var shelter = await shelterCreateResponse.Content.ReadFromJsonAsync<Shelter>();
+
+        var response = await httpClient.GetAsync($"/shelters/{shelter!.Id.Id}/history/999");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task ShelterHistoryDateListed_ShouldReturnNotFound()
     {
         using var scope = webFactory.Services.CreateScope();
@@ -334,8 +382,9 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterIdOrigin}/pets", new ListPetModel("Sandy"));
         var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
         Ulid petId = petResponseContent!.Pet.Id.Id;
+        var targetShelterId = shelterIdTarget.ToString();
 
-        var sut = await httpClient.PutAsJsonAsync<string>($"/shelters/{shelterIdOrigin}/pets/{petId}/transfer", shelterIdTarget.ToString());
+        var sut = await httpClient.PutAsJsonAsync($"/shelters/{shelterIdOrigin}/pets/{petId}/transfer", targetShelterId);
         sut.StatusCode.Should().Be(HttpStatusCode.OK);
         var sutContent = await sut.Content.ReadFromJsonAsync<ShelteredPetEvent>();
         sutContent!.PetIdentity.Id.Should().Be(petId);

@@ -94,6 +94,22 @@ public class HistoryProviderInMemeory : IHistoryProvider
         return ShelterEvents.FirstOrDefault(e => e.ShelterIdentity == shelterIdentity && e.ShelterEventKind == ShelterEventKind.ShelterListed)!;
     }
 
+    public IEnumerable<ShelterEvent> GetShelterHistory(ShelterIdentity shelterIdentity)
+    {
+        return ShelterEvents
+            .Where(e => e.ShelterIdentity == shelterIdentity)
+            .OrderBy(e => e.Timestamp)
+            .ToList();
+    }
+
+    public IEnumerable<ShelterEvent> GetShelterHistoryByEventKind(ShelterIdentity shelterIdentity, ShelterEventKind eventKind)
+    {
+        return ShelterEvents
+            .Where(e => e.ShelterIdentity == shelterIdentity && e.ShelterEventKind == eventKind)
+            .OrderBy(e => e.Timestamp)
+            .ToList();
+    }
+
     public IEnumerable<FosterPersonEvent> GetFosterPersonHistory(PersonIdentity person)
     {
         return FosterPersonEvents.Where(p => p.PersonIdentity == person);

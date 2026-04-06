@@ -104,6 +104,16 @@ public class Facade : IDomainFacade, IShelterFacade, IShelterHistoryFacade, IShe
         return history.GetShelterDateListedByShelter(shelterIdentity);
     }
 
+    public IEnumerable<ShelterEvent> GetShelterHistory(ShelterIdentity shelterIdentity)
+    {
+        return history.GetShelterHistory(shelterIdentity);
+    }
+
+    public IEnumerable<ShelterEvent> GetShelterHistoryByEventKind(ShelterIdentity shelterIdentity, ShelterEventKind eventKind)
+    {
+        return history.GetShelterHistoryByEventKind(shelterIdentity, eventKind);
+    }
+
     public int GetPetsFosteredCountByShelter(ShelterIdentity shelterIdentity)
     {
         return history.GetPetsFosteredCountByShelter(shelterIdentity);

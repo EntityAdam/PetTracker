@@ -126,6 +126,34 @@ app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (stri
 
 // --------------------------------------------------  Shelters History -------------------------------------------------- //
 
+app.MapGet("/shelters/{shelterId}/history", async Task<Results<Ok<IEnumerable<ShelterEvent>>, NotFound, BadRequest>> (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetHistoryById(shelterId)
+        is IEnumerable<ShelterEvent> shelterEvents
+        && shelterEvents.Any()
+        ? TypedResults.Ok(shelterEvents)
+        : TypedResults.NotFound();
+});
+
+app.MapGet("/shelters/{shelterId}/history/{eventKind:int}", async Task<Results<Ok<IEnumerable<ShelterEvent>>, NotFound, BadRequest>> (string shelterId, int eventKind, [FromServices] ShelterHistoryApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Enum.IsDefined(typeof(ShelterEventKind), eventKind))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.GetHistoryEventTypeById(shelterId, eventKind)
+        is IEnumerable<ShelterEvent> shelterEvents
+        && shelterEvents.Any()
+        ? TypedResults.Ok(shelterEvents)
+        : TypedResults.NotFound();
+});
+
 app.MapGet("/shelters/{shelterId}/history/date-listed", async Task<Results<Ok<ShelterEvent>, NotFound, BadRequest>> (string shelterId, [FromServices] ShelterHistoryApiViewModel viewModel) =>
 {
     if (!Ulid.TryParse(shelterId, out _))
