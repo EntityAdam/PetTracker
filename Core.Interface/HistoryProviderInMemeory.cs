@@ -124,4 +124,30 @@ public class HistoryProviderInMemeory : IHistoryProvider
     {
         AdopterPersonEvents.Add(new(adopterPerson, AdopterPersonEventKind.OpenToAdopt, timeProvider.GetUtcNow()));
     }
+
+    public void ShelteredPetEventOutcome(ShelteredPet shelteredPet, OutcomeKind outcomeKind, DateTimeOffset timestamp)
+    {
+        var (pet, shelterId) = shelteredPet;
+        switch (outcomeKind)
+        {
+            case OutcomeKind.ReturnedToOwner:
+                PetEvents.Add(new(pet.Id, PetEventKind.ReturnedToOwner, timestamp));
+                ShelterEvents.Add(new(shelterId, ShelterEventKind.PetReturnedToOwner, timestamp));
+                break;
+            case OutcomeKind.TransferredToRescue:
+                PetEvents.Add(new(pet.Id, PetEventKind.TransferredToRescue, timestamp));
+                ShelterEvents.Add(new(shelterId, ShelterEventKind.PetTransferredToRescue, timestamp));
+                break;
+            case OutcomeKind.DiedInCare:
+                PetEvents.Add(new(pet.Id, PetEventKind.DiedInCare, timestamp));
+                ShelterEvents.Add(new(shelterId, ShelterEventKind.PetDiedInCare, timestamp));
+                break;
+            case OutcomeKind.Euthanized:
+                PetEvents.Add(new(pet.Id, PetEventKind.Euthanized, timestamp));
+                ShelterEvents.Add(new(shelterId, ShelterEventKind.PetEuthanized, timestamp));
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported outcome kind: {outcomeKind}");
+        }
+    }
 }

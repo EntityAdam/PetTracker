@@ -6,71 +6,70 @@ namespace Core.Access;
 public class ShelterAccessAdapter : IShelterFacade, IShelterPetsFacade
 {
     private readonly IUserRolesStore userRoles;
-    private readonly IShelterFacade domainFacade;
-    private readonly IShelterPetsFacade? shelterPetsFacade;
+    private readonly IShelterFacade shelterFacade;
+    private readonly IShelterPetsFacade shelterPetsFacade;
     private readonly User user;
     private readonly Role requiredRole = new(RoleKind.Shelter);
 
-    public ShelterAccessAdapter(IUserRolesStore userRoleStore, IShelterFacade shelterFacade, User user)
+    public ShelterAccessAdapter(IUserRolesStore userRoleStore, IDomainFacade domainFacade, User user)
     {
         this.userRoles = userRoleStore;
-        this.domainFacade = shelterFacade;
-        this.shelterPetsFacade = shelterFacade as IShelterPetsFacade;
+        this.shelterFacade = domainFacade as IShelterFacade
+            ?? throw new InvalidOperationException("IDomainFacade must implement IShelterFacade.");
+        this.shelterPetsFacade = domainFacade as IShelterPetsFacade
+            ?? throw new InvalidOperationException("IDomainFacade must implement IShelterPetsFacade.");
         this.user = user;
     }
 
     public void ShelterCreate(Shelter shelter, DateTimeOffset timestamp)
     {
         EnsureAuthorized();
-        domainFacade.ShelterCreate(shelter, timestamp);
+        shelterFacade.ShelterCreate(shelter, timestamp);
     }
 
     public IEnumerable<Shelter> ListShelters()
     {
-        EnsureAuthorized();
-        return domainFacade.ListShelters();
+        return shelterFacade.ListShelters();
     }
 
     public void ShelterRemoveAndObfuscateData(ShelterIdentity shelter)
     {
         EnsureAuthorized();
-        domainFacade.ShelterRemoveAndObfuscateData(shelter);
+        shelterFacade.ShelterRemoveAndObfuscateData(shelter);
     }
 
     public void DeleteShelter(ShelterIdentity shelter)
     {
         EnsureAuthorized();
-        domainFacade.DeleteShelter(shelter);
+        shelterFacade.DeleteShelter(shelter);
     }
 
     public void ShelterAddPet(ShelteredPet shelteredPet, DateTimeOffset timestamp)
     {
         EnsureAuthorized();
-        RequireShelterPetsFacade().ShelterAddPet(shelteredPet, timestamp);
+        shelterPetsFacade.ShelterAddPet(shelteredPet, timestamp);
     }
 
     public IEnumerable<ShelteredPet> GetShelteredPets(ShelterIdentity shelterIdentity)
     {
-        EnsureAuthorized();
-        return RequireShelterPetsFacade().GetShelteredPets(shelterIdentity);
+        return shelterPetsFacade.GetShelteredPets(shelterIdentity);
     }
 
     public ShelteredPet? GetShelteredPetDetails(ShelterIdentity shelterIdentity, PetIdentity petIdentity)
     {
-        EnsureAuthorized();
-        return RequireShelterPetsFacade().GetShelteredPetDetails(shelterIdentity, petIdentity);
+        return shelterPetsFacade.GetShelteredPetDetails(shelterIdentity, petIdentity);
     }
 
     public void ShelterTransferPet(ShelteredPet shelteredPet, ShelterIdentity shelter)
     {
         EnsureAuthorized();
-        RequireShelterPetsFacade().ShelterTransferPet(shelteredPet, shelter);
+        shelterPetsFacade.ShelterTransferPet(shelteredPet, shelter);
     }
 
     public void ShelterUnlistPet(ShelteredPet shelteredPet)
     {
         EnsureAuthorized();
-        RequireShelterPetsFacade().ShelterUnlistPet(shelteredPet);
+        shelterPetsFacade.ShelterUnlistPet(shelteredPet);
     }
 
     private void EnsureAuthorized()
@@ -81,13 +80,4 @@ public class ShelterAccessAdapter : IShelterFacade, IShelterPetsFacade
         }
     }
 
-    private IShelterPetsFacade RequireShelterPetsFacade()
-    {
-        if (shelterPetsFacade is null)
-        {
-            throw new InvalidOperationException("Shelter pet operations are not available from the configured facade.");
-        }
-
-        return shelterPetsFacade;
-    }
 }

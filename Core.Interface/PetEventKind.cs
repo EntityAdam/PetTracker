@@ -9,5 +9,9 @@ public enum PetEventKind
     ListedAtShelter,
     TransferredToAnotherShelter,
     TransferredFromAnotherShelter,
-    Sponsored
+    Sponsored,
+    ReturnedToOwner,
+    TransferredToRescue,
+    DiedInCare,
+    Euthanized
 }

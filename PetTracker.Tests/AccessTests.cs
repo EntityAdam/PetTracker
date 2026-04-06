@@ -53,15 +53,19 @@ public class AccessTests
     }
 
     [Fact]
-    public void ListShelters_WithoutShelterRole_ShouldThrow()
+    public void ListShelters_WithoutShelterRole_ShouldReturnResults()
     {
         TestHelper testHelper = new(new FakeTimeProvider());
-        User user = TestHelper.NewUser("anonymous@entityadam.com");
-        ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, user);
+        User authorizedUser = testHelper.NewUserInRole("owner@entityadam.com", RoleKind.Shelter);
+        ShelterAccessAdapter authorizedAdapter = new(testHelper.UserStore, testHelper.Facade, authorizedUser);
+        Shelter shelter = new(new(Ulid.NewUlid()), new("Shelter A", string.Empty));
+        authorizedAdapter.ShelterCreate(shelter, testHelper.TimeProvider.GetUtcNow());
 
-        var act = () => adapter.ListShelters();
+        User anonymousUser = TestHelper.NewUser("anonymous@entityadam.com");
+        ShelterAccessAdapter adapter = new(testHelper.UserStore, testHelper.Facade, anonymousUser);
 
-        act.Should().Throw<UnauthorizedAccessException>();
+        var result = adapter.ListShelters();
+        result.Should().ContainSingle(s => s.Id == shelter.Id);
     }
 
     [Fact]

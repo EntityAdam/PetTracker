@@ -75,6 +75,12 @@ public class Facade : IDomainFacade, IShelterFacade, IShelterHistoryFacade, IShe
         history.ShelteredPetEventAdopted(pet, person, timestamp);
     }
 
+    public void ShelterRecordOutcome(ShelteredPet shelteredPet, OutcomeKind outcomeKind, DateTimeOffset timestamp)
+    {
+        data.UnlistShelteredPet(shelteredPet);
+        history.ShelteredPetEventOutcome(shelteredPet, outcomeKind, timestamp);
+    }
+
     public void AdopterPersonRemove(PersonIdentity personIdentity)
     {
         data.RemoveAdopterPerson(personIdentity);

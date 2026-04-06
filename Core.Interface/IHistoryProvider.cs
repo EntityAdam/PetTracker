@@ -9,6 +9,7 @@ public interface IHistoryProvider
     public void ShelteredPetEventFostered(ShelteredPet shelteredPet, PersonIdentity personIdentity, DateTimeOffset timestamp);
     public void ShelteredPetEventAdopted(ShelteredPet shelteredPet, PersonIdentity personIdentity, DateTimeOffset timestamp);
     public void ShelteredPetEventTransferred(PetIdentity petIdentity, ShelterIdentity shelterIdentity);
+    public void ShelteredPetEventOutcome(ShelteredPet shelteredPet, OutcomeKind outcomeKind, DateTimeOffset timestamp);
 
 
     public void RemovePetHistory(PetIdentity petIdentity, ShelterIdentity shelterIdentity);

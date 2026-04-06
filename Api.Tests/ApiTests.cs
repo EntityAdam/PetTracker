@@ -325,9 +325,11 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         
         var content1 = await shelterCreateResponse1.Content.ReadFromJsonAsync<Shelter>();
         var content2 = await shelterCreateResponse2.Content.ReadFromJsonAsync<Shelter>();
+        content1.Should().NotBeNull();
+        content2.Should().NotBeNull();
 
-        var shelterIdOrigin = content1?.Id.Id;
-        var shelterIdTarget = content2?.Id.Id;
+        var shelterIdOrigin = content1!.Id.Id;
+        var shelterIdTarget = content2!.Id.Id;
 
         var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterIdOrigin}/pets", new ListPetModel("Sandy"));
         var petResponseContent = await listPetResponse.Content.ReadFromJsonAsync<ShelteredPet>();
@@ -370,6 +372,63 @@ public class ApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 
         var listPetResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelterId}/pets", new ListPetModel("Sandy"));
         listPetResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateFosterPerson_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var response = await httpClient.PostAsJsonAsync("/fosterpersons", new CreateFosterPersonModel("Foster One", 2));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var content = await response.Content.ReadFromJsonAsync<FosterPerson>();
+        content.Should().NotBeNull();
+        content!.fosterPersonDetails.Name.Should().Be("Foster One");
+    }
+
+    [Fact]
+    public async Task AssignPetToFoster_ShouldSucceed()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("Shelter A"));
+        var shelter = await shelterResponse.Content.ReadFromJsonAsync<Shelter>();
+
+        var petResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelter!.Id.Id}/pets", new ListPetModel("Sandy"));
+        var pet = await petResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+
+        var fosterResponse = await httpClient.PostAsJsonAsync("/fosterpersons", new CreateFosterPersonModel("Foster One", 3));
+        var foster = await fosterResponse.Content.ReadFromJsonAsync<FosterPerson>();
+
+        var assignResponse = await httpClient.PutAsync($"/shelters/{shelter.Id.Id}/pets/{pet!.Pet.Id.Id}/foster/{foster!.Id.Id}", new StringContent(string.Empty));
+
+        assignResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var fosterEvent = await assignResponse.Content.ReadFromJsonAsync<ShelteredPetEvent>();
+        fosterEvent.Should().NotBeNull();
+        fosterEvent!.PetEventKind.Should().Be(PetEventKind.Fostered);
+    }
+
+    [Fact]
+    public async Task RecordOutcome_ShouldSucceed_AndRemovePetFromShelter()
+    {
+        using var scope = webFactory.Services.CreateScope();
+
+        var shelterResponse = await httpClient.PostAsJsonAsync("/shelters", new ShelterModel("Shelter A"));
+        var shelter = await shelterResponse.Content.ReadFromJsonAsync<Shelter>();
+
+        var petResponse = await httpClient.PostAsJsonAsync($"/shelters/{shelter!.Id.Id}/pets", new ListPetModel("Sandy"));
+        var pet = await petResponse.Content.ReadFromJsonAsync<ShelteredPet>();
+
+        var outcomeResponse = await httpClient.PutAsJsonAsync($"/shelters/{shelter.Id.Id}/pets/{pet!.Pet.Id.Id}/outcome", new RecordOutcomeModel(OutcomeKind.ReturnedToOwner));
+
+        outcomeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var outcomeEvent = await outcomeResponse.Content.ReadFromJsonAsync<ShelteredPetEvent>();
+        outcomeEvent.Should().NotBeNull();
+        outcomeEvent!.PetEventKind.Should().Be(PetEventKind.ReturnedToOwner);
+
+        var lookupResponse = await httpClient.GetAsync($"/shelters/{shelter.Id.Id}/pets/{pet.Pet.Id.Id}");
+        lookupResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     //[Fact]

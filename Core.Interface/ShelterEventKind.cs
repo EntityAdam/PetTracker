@@ -10,5 +10,9 @@ public enum ShelterEventKind
     ShelterListed,
     PetReturnedFromFoster,
     PetReturnedFromAdopter,
-    Sponsored
+    Sponsored,
+    PetReturnedToOwner,
+    PetTransferredToRescue,
+    PetDiedInCare,
+    PetEuthanized
 }

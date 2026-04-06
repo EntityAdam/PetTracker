@@ -1,5 +1,9 @@
-﻿using Core.Extensions;
+﻿using Core.Interface.Persistence;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace IntegrationTests.Helpers;
@@ -14,8 +18,18 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
         builder.UseEnvironment("Development");
 
         builder.ConfigureServices(services =>
-        {  
-            services.AddPetTracker();
+        {
+            services.RemoveAll<DbContextOptions<PetTrackerDbContext>>();
+            var dbPath = Path.Combine(Path.GetTempPath(), $"pettracker-tests-{Guid.NewGuid():N}.db");
+            services.AddDbContext<PetTrackerDbContext>(options =>
+                options.UseSqlite($"Data Source={dbPath}"));
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+                options.DefaultScheme = TestAuthHandler.SchemeName;
+            }).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
         });
 
         return base.CreateHost(builder);

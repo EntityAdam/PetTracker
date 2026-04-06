@@ -23,6 +23,7 @@ namespace Core.Interface
  
         void ShelterAssignAdopterPerson(AdopterPetAssignment adopterPetAssignement);
         void ShelterAssignFosterPerson(FosterPetAssignment fosterPetAssignment);
+        void ShelterRecordOutcome(ShelteredPet shelteredPet, OutcomeKind outcomeKind, DateTimeOffset timestamp);
 
 
 

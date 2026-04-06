@@ -1,6 +1,9 @@
 using Core.Extensions;
+using Core.Interface;
 using Core.Interface.Events;
 using Core.Interface.Models;
+using Core.Access;
+using Core.Interface.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,13 +14,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();                                             //openapi https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/openapi?view=aspnetcore-7.0
 builder.Services.AddSwaggerGen(options => options.ConfigureSwaggerToAcceptJwtBearer()); //openapi https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/openapi?view=aspnetcore-7.0
 builder.Services.AddAuthentication().AddJwtBearer();                                    //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-7.0
-builder.Services.AddAuthorization();                                                    //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security?view=aspnetcore-7.0
+builder.Services.AddAuthorizationBuilder().AddPolicy("shelter-policy", policy => policy.RequireRole("shelter", "Shelter"));
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddPetTracker();
-builder.Services.AddSingleton<ShelterApiViewModel>();
-builder.Services.AddSingleton<ShelterHistoryApiViewModel>();
-builder.Services.AddSingleton<ShelterPetsHistoryApiViewModel>();
-builder.Services.AddSingleton<ShelterPetsApiViewModel>();
-builder.Services.AddSingleton<ShelterPetsHistoryApiViewModel>();
+builder.Services.AddScoped<User>(sp =>
+{
+    var user = sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.User;
+    var principalId = user?.Identity?.Name
+        ?? user?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        ?? "anonymous";
+
+    return new User(principalId);
+});
+builder.Services.AddScoped<ShelterApiViewModel>();
+builder.Services.AddScoped<ShelterHistoryApiViewModel>();
+builder.Services.AddScoped<ShelterPetsHistoryApiViewModel>();
+builder.Services.AddScoped<ShelterPetsApiViewModel>();
+builder.Services.AddScoped<ShelterPeopleApiViewModel>();
 
 //next steps
 //https://auth0.com/docs/get-started/applications/configure-application-metadata
@@ -29,6 +42,12 @@ builder.Services.AddSingleton<ShelterPetsHistoryApiViewModel>();
 /// curl -i -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkFkYW0uVmluY2VudCIsInN1YiI6IkFkYW0uVmluY2VudCIsImp0aSI6ImVkOTMzMDNiIiwicm9sZSI6InNoZWx0ZXIiLCJhdWQiOlsiaHR0cDovL2xvY2FsaG9zdDo1MDI1NCIsImh0dHBzOi8vbG9jYWxob3N0OjQ0MzczIiwiaHR0cDovL2xvY2FsaG9zdDo1MDAwIiwiaHR0cHM6Ly9sb2NhbGhvc3Q6NzI2NyJdLCJuYmYiOjE2OTE4MTI5MjAsImV4cCI6MTY5OTc2MTcyMCwiaWF0IjoxNjkxODEyOTIwLCJpc3MiOiJkb3RuZXQtdXNlci1qd3RzIn0.ETEUXYOuMN1yY0GeqAw4aRcT0EfeXEBJ5lTHiJkZ_Gk" https://localhost:7267/secret
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PetTrackerDbContext>();
+    db.Database.EnsureCreated();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -38,6 +57,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var principalId = context.User.Identity?.Name
+            ?? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? "anonymous";
+        var user = new User(principalId);
+        var roleManager = context.RequestServices.GetRequiredService<IAccessRoleManager>();
+
+        foreach (var role in context.User.FindAll(ClaimTypes.Role).Concat(context.User.FindAll("role")).Select(r => r.Value).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (Program.TryMapRoleKind(role, out var roleKind))
+            {
+                roleManager.AssignRole(new AccessRoleAssignment(user, new Role(roleKind)));
+            }
+        }
+    }
+
+    await next();
+});
 
 app.MapGet("/", () => "Hello World!");
 
@@ -60,7 +100,7 @@ app.MapPost("/shelters", async Task<Results<Created<Shelter>, BadRequest>> ([Fro
     await viewModel.Create(shelter)
       is Shelter createdShelter
         ? TypedResults.Created($"/shelters/{createdShelter.Id.Id}", createdShelter)
-        : TypedResults.BadRequest());
+                : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
 
 app.MapGet("/shelters", async (ShelterApiViewModel viewModel) =>
     TypedResults.Ok(await viewModel.ListAll()));
@@ -82,7 +122,7 @@ app.MapDelete("/shelters/{id}", async Task<Results<NoContent, BadRequest>> (stri
     await viewModel.Delete(id)
       is true
         ? TypedResults.NoContent()
-        : TypedResults.BadRequest());
+                : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
 
 // --------------------------------------------------  Shelters History -------------------------------------------------- //
 
@@ -105,7 +145,7 @@ app.MapPost("/shelters/{shelterId}/pets", async Task<Results<Created<ShelteredPe
     await viewModel.AddPet(shelterId, listPetModel)
        is ShelteredPet petModel
          ? TypedResults.Created($"/shelters/{shelterId}/pets/{petModel.Pet.Id}", petModel)
-         : TypedResults.BadRequest());
+                 : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
 
 app.MapGet("/shelters/{shelterId}/pets", async Task<Results<Ok<IEnumerable<ShelteredPet>>, BadRequest>> (string shelterId, [FromServices] ShelterPetsApiViewModel viewModel) =>
     await viewModel.ListAllPets(shelterId)
@@ -130,7 +170,72 @@ app.MapPut("/shelters/{shelterId}/pets/{petId}/transfer", async Task<Results<Ok<
     await viewModel.TransferPet(shelterId, petId, shelterIdTarget)
         is ShelteredPetEvent transferEvent
         ? TypedResults.Ok(transferEvent)
-        : TypedResults.BadRequest());
+        : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
+
+// --------------------------------------------------  People -------------------------------------------------- //
+
+app.MapPost("/fosterpersons", async Task<Results<Created<FosterPerson>, BadRequest>> ([FromServices] ShelterPeopleApiViewModel viewModel, [FromBody] CreateFosterPersonModel model) =>
+    await viewModel.CreateFosterPerson(model)
+        is FosterPerson fosterPerson
+        ? TypedResults.Created($"/fosterpersons/{fosterPerson.Id.Id}", fosterPerson)
+        : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
+
+app.MapPost("/adopterpersons", async Task<Results<Created<AdopterPerson>, BadRequest>> ([FromServices] ShelterPeopleApiViewModel viewModel, [FromBody] CreateAdopterPersonModel model) =>
+    await viewModel.CreateAdopterPerson(model)
+        is AdopterPerson adopterPerson
+        ? TypedResults.Created($"/adopterpersons/{adopterPerson.Id.Id}", adopterPerson)
+        : TypedResults.BadRequest()).RequireAuthorization("shelter-policy");
+
+app.MapPut("/shelters/{shelterId}/pets/{petId}/foster/{fosterPersonId}", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (
+    string shelterId,
+    string petId,
+    string fosterPersonId,
+    [FromServices] ShelterPeopleApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Ulid.TryParse(petId, out _) || !Ulid.TryParse(fosterPersonId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.AssignToFosterPerson(shelterId, petId, fosterPersonId)
+        is ShelteredPetEvent fosterEvent
+        ? TypedResults.Ok(fosterEvent)
+        : TypedResults.BadRequest();
+}).RequireAuthorization("shelter-policy");
+
+app.MapPut("/shelters/{shelterId}/pets/{petId}/adopt/{adopterPersonId}", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (
+    string shelterId,
+    string petId,
+    string adopterPersonId,
+    [FromServices] ShelterPeopleApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Ulid.TryParse(petId, out _) || !Ulid.TryParse(adopterPersonId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.AssignToAdopterPerson(shelterId, petId, adopterPersonId)
+        is ShelteredPetEvent adoptEvent
+        ? TypedResults.Ok(adoptEvent)
+        : TypedResults.BadRequest();
+}).RequireAuthorization("shelter-policy");
+
+app.MapPut("/shelters/{shelterId}/pets/{petId}/outcome", async Task<Results<Ok<ShelteredPetEvent>, BadRequest>> (
+    string shelterId,
+    string petId,
+    [FromBody] RecordOutcomeModel model,
+    [FromServices] ShelterPeopleApiViewModel viewModel) =>
+{
+    if (!Ulid.TryParse(shelterId, out _) || !Ulid.TryParse(petId, out _))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    return await viewModel.RecordOutcome(shelterId, petId, model.OutcomeKind)
+        is ShelteredPetEvent outcomeEvent
+        ? TypedResults.Ok(outcomeEvent)
+        : TypedResults.BadRequest();
+}).RequireAuthorization("shelter-policy");
 
 // --------------------------------------------------  Shelter Pets History -------------------------------------------------- //
 
@@ -246,7 +351,29 @@ public record ShelterModel(string Name);
 public record PetModel(string Name);
 public record ListPet(string PetName, string ShelterName);
 public record TransferPetByIdToShelterName(Ulid PetId, string Shelter);
-public partial class Program { }
+public record CreateFosterPersonModel(string Name, int MaxPets);
+public record CreateAdopterPersonModel(string Name);
+public record RecordOutcomeModel(OutcomeKind OutcomeKind);
+public partial class Program
+{
+    public static bool TryMapRoleKind(string claimValue, out RoleKind roleKind)
+    {
+        roleKind = RoleKind.Anonymous;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            return false;
+        }
+
+        return claimValue.Trim().ToLowerInvariant() switch
+        {
+            "anonymous" => (roleKind = RoleKind.Anonymous) == RoleKind.Anonymous,
+            "fosterperson" => (roleKind = RoleKind.FosterPerson) == RoleKind.FosterPerson,
+            "adopterperson" => (roleKind = RoleKind.AdopterPerson) == RoleKind.AdopterPerson,
+            "shelter" => (roleKind = RoleKind.Shelter) == RoleKind.Shelter,
+            _ => false
+        };
+    }
+}
 
 
 
